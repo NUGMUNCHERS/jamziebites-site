@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JamzieBites · Furry Art Commissions</title>
+  <meta name="description" content="Soft, sparkly furry art commissions by Jamzie — chibis, stickers, reference sheets, full renders and cinematic illustrations. Hand-drawn, never AI.">
+  <meta name="robots" content="index, follow, noai, noimageai">
+  <meta name="theme-color" content="#ff8fc4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#140a30" media="(prefers-color-scheme: dark)">
+
+  <!-- Social share previews -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="JamzieBites">
+  <meta property="og:title" content="JamzieBites · Furry Art Commissions">
+  <meta property="og:description" content="Soft, sparkly furry art — chibis, stickers, ref sheets & cinematic illustrations. Commissions info, prices & quote calculator inside ♡">
+  <meta property="og:image" content="https://jamziebites.com/assets/art/stargazer-astronaut.jpg">
+  <meta property="og:url" content="https://jamziebites.com/">
+  <link rel="canonical" href="https://jamziebites.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@jamziebites">
+
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/logo.svg">
+  <link rel="manifest" href="site.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Gochi+Hand&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+
+  <!-- Pick the theme before paint so there's no flash -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem("jb-theme"); } catch (e) {}
+      if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <nav class="container nav" aria-label="Main">
+      <a class="logo" href="#top" aria-label="JamzieBites home">
+        <img class="logo-mark" src="assets/logo.svg" alt="" width="38" height="38">
+        <span class="logo-word">Jamzie<span class="grad-text">Bites</span></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#prices">Prices</a></li>
+        <li><a href="#quote">Quote</a></li>
+        <li><a href="#process">Process</a></li>
+        <li><a href="#queue">Queue</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="tos.html">Terms</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn btn-primary btn-sm" href="#request">Request ♡</a>
+        <button class="icon-btn theme-toggle" type="button" aria-label="Switch light / dark theme" title="Daydream / Stargazer">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/><path d="M17 3l.6 1.4L19 5l-1.4.6L17 7l-.6-1.4L15 5l1.4-.6z" fill="currentColor"/></svg>
+        </button>
+        <button class="icon-btn menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- ============ HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <canvas id="sky" aria-hidden="true"></canvas>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <a class="status-pill" href="#queue" data-status="open" id="status-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="status-text">Commissions open</span>
+            <span class="slots" id="status-slots"></span>
+          </a>
+          <h1 id="hero-title">
+            Soft, sparkly art<br>
+            <span class="line2">for your <span class="squiggle grad-text">favorite OCs<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 Q 25 2, 50 11 T 100 11 T 150 11 T 198 9"/></svg></span> ♡</span>
+          </h1>
+          <p class="hero-lead">Hi, I'm <strong>Jamzie</strong>! I draw cozy, glowy furry art — from squishy chibis and sticker packs to fully rendered, cinematic scenes. Every piece is hand-drawn in my own style. SFW only — and no AI, ever.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary" href="#request">Request a commission</a>
+            <a class="btn" href="#quote">Get a price estimate</a>
+          </div>
+          <ul class="hero-stats">
+            <li><strong>from $25</strong>chibis &amp; stickers</li>
+            <li><strong id="stat-turnaround">2–12 wks</strong>turnaround</li>
+            <li><strong>2 free</strong>sketch revisions</li>
+          </ul>
+        </div>
+
+        <div class="hero-art protect" aria-label="Featured artwork">
+          <figure class="frame frame-back">
+            <img src="assets/art/porch-moonlight.jpg" width="2000" height="1350" alt="Pink dragon-shark character lounging on porch steps under string lights at night." fetchpriority="high">
+          </figure>
+          <figure class="frame frame-main">
+            <img src="assets/art/stargazer-astronaut.jpg" width="2000" height="1119" alt="Fluffy pink dragon-shark astronaut sitting on a rock, gazing at a glowing purple planet." fetchpriority="high">
+            <figcaption>✦ stargazer</figcaption>
+          </figure>
+          <figure class="frame frame-side">
+            <img src="assets/art/poodle-chibi-sheet.jpg" width="2000" height="1650" alt="Sheet of four chibi poodle expressions in a striped sweater.">
+          </figure>
+          <svg class="float-deco d1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.5 3 5 6.4 5c2.1 0 3.6 1.2 5.6 3.4C14 6.2 15.5 5 17.6 5 21 5 23.1 8.5 21.6 11.8 19.5 16.4 12 21 12 21z" fill="#ff7fb6"/></svg>
+          <svg class="float-deco d2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1l2.8 7.2L22 11l-7.2 2.8L12 21l-2.8-7.2L2 11l7.2-2.8z" fill="#ffcf4d"/></svg>
+          <svg class="float-deco d3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1l2.8 7.2L22 11l-7.2 2.8L12 21l-2.8-7.2L2 11l7.2-2.8z" fill="#b892ff"/></svg>
+        </div>
+      </div>
+      <div class="hero-clouds" aria-hidden="true">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path fill="currentColor" d="M0 80c60-30 120-40 180-20s100 10 150-15 120-30 170 0 90 40 160 25 110-45 180-40 110 35 170 30 100-35 170-40 110 20 140 30 70 15 120 10V120H0z"/></svg>
+      </div>
+    </section>
+
+    <!-- ============ MARQUEE ============ -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>chibis</span><span>sticker packs</span><span>reference sheets</span><span>full renders</span><span>cinematic scenes</span><span>fluffy OCs</span><span>dragons &amp; hybrids</span><span>100% hand-drawn</span><span>SFW only</span><span>art trades open</span>
+        <span>chibis</span><span>sticker packs</span><span>reference sheets</span><span>full renders</span><span>cinematic scenes</span><span>fluffy OCs</span><span>dragons &amp; hybrids</span><span>100% hand-drawn</span><span>SFW only</span><span>art trades open</span>
+      </div>
+    </div>
+
+    <!-- ============ GALLERY ============ -->
+    <section class="section" id="gallery" aria-labelledby="gallery-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">portfolio</div>
+          <h2 id="gallery-title">The <span class="grad-text">Gallery</span></h2>
+          <p>A peek at what I make. Click any piece to see it big!</p>
+        </div>
+        <div class="filters reveal" id="gallery-filters" role="group" aria-label="Filter gallery"></div>
+        <div class="gallery protect" id="gallery-grid"></div>
+        <p class="gallery-note">All artwork © JamzieBites. Please don't repost without credit, edit, or feed it to AI. ♡</p>
+      </div>
+    </section>
+
+    <!-- ============ PRICES ============ -->
+    <section class="section alt" id="prices" aria-labelledby="prices-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">price sheet</div>
+          <h2 id="prices-title">Commission <span class="grad-text">Prices</span></h2>
+          <p>All prices are in USD and are <em>starting</em> prices — the final quote depends on complexity.</p>
+        </div>
+
+        <div class="tabs reveal" role="tablist" aria-label="Price categories">
+          <button class="tab" role="tab" id="tab-ill" aria-controls="panel-ill" aria-selected="true">Illustrations</button>
+          <button class="tab" role="tab" id="tab-chibi" aria-controls="panel-chibi" aria-selected="false" tabindex="-1">Chibis &amp; Stickers</button>
+          <button class="tab" role="tab" id="tab-ref" aria-controls="panel-ref" aria-selected="false" tabindex="-1">Ref Sheets</button>
+          <button class="tab" role="tab" id="tab-cine" aria-controls="panel-cine" aria-selected="false" tabindex="-1">Cinematic</button>
+          <button class="tab" role="tab" id="tab-extra" aria-controls="panel-extra" aria-selected="false" tabindex="-1">Backgrounds &amp; Extras</button>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" id="panel-ill" aria-labelledby="tab-ill">
+          <div class="price-grid" id="price-standard"></div>
+          <div class="finish-compare">
+            <div class="card finish"><div class="swatch flat"></div><b>Flat colors</b><p>Clean lineart + flat coloring. Included in every base price.</p></div>
+            <div class="card finish"><div class="swatch shade"></div><b>Simple shading</b><p>Soft cel shading to add depth and form.</p></div>
+            <div class="card finish"><div class="swatch render"></div><b>Full rendering</b><p>Detailed lighting, soft shadows, highlights, textures &amp; atmosphere.</p></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" id="panel-chibi" aria-labelledby="tab-chibi" hidden>
+          <div class="two-col">
+            <div class="card price-card">
+              <svg class="pc-icon" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="26" fill="var(--pink-soft)"/><circle cx="27" cy="30" r="14" fill="var(--pink)"/><circle cx="21" cy="29" r="2.5" fill="#2a1f45"/><circle cx="33" cy="29" r="2.5" fill="#2a1f45"/><path d="M24 35q3 2.5 6 0" stroke="#2a1f45" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="18" r="6" fill="var(--pink)"/><circle cx="38" cy="18" r="6" fill="var(--pink)"/></svg>
+              <h3>Chibi Commissions</h3>
+              <p class="desc">Tiny, squishy, extra-expressive versions of your character.</p>
+              <ul class="price-rows" id="price-chibi"></ul>
+            </div>
+            <div class="card price-card featured">
+              <span class="ribbon">great for emotes</span>
+              <svg class="pc-icon" viewBox="0 0 54 54" aria-hidden="true"><rect x="6" y="8" width="34" height="34" rx="10" fill="var(--lilac)" transform="rotate(-8 23 25)"/><rect x="14" y="13" width="34" height="34" rx="10" fill="var(--peri)" stroke="#fff" stroke-width="3"/><path d="M31 21l2.3 5 5.4.6-4 3.7 1.1 5.3L31 33l-4.8 2.6 1.1-5.3-4-3.7 5.4-.6z" fill="#ffcf4d"/></svg>
+              <h3>Sticker Commissions</h3>
+              <p class="desc">Perfect for Discord, Telegram, streams &amp; printing at home.</p>
+              <ul class="price-rows" id="price-stickers"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" id="panel-ref" aria-labelledby="tab-ref" hidden>
+          <div class="two-col" id="price-ref"></div>
+          <p class="price-note">✦ <strong>No ref sheet yet?</strong> Add a custom character design (+$50–$100) to either sheet and I'll design your character from scratch. Custom designs are only available as a ref sheet — not in scenic pieces.<br>Extra expressions are <strong id="expr-price">+$20</strong> each. Additional views, outfits, accessories &amp; redesigns are quoted separately.</p>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" id="panel-cine" aria-labelledby="tab-cine" hidden>
+          <div class="two-col">
+            <div class="card price-card featured">
+              <span class="ribbon">premium</span>
+              <svg class="pc-icon" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="26" fill="#2a1650"/><circle cx="34" cy="36" r="14" fill="#6f74f0"/><path d="M14 40a24 10 -18 0 1 40-14" stroke="#c6a6ff" stroke-width="2.5" fill="none"/><circle cx="16" cy="16" r="4" fill="#ff8fd0"/><circle cx="30" cy="12" r="1.3" fill="#fff"/><circle cx="42" cy="20" r="1.3" fill="#fff"/><circle cx="12" cy="28" r="1.1" fill="#fff"/></svg>
+              <h3>Cinematic Illustrations</h3>
+              <div class="price"><span id="price-cine">$250</span><small>+</small></div>
+              <p class="desc">Fully rendered illustrations featuring immersive environments, complex lighting and atmospheric details — the full movie-poster treatment.</p>
+              <ul class="check-list">
+                <li>Full rendering included</li>
+                <li>Immersive, story-driven environment</li>
+                <li>Complex lighting &amp; atmosphere</li>
+                <li>Great as a wallpaper, banner or print</li>
+              </ul>
+            </div>
+            <figure class="card protect" style="margin:0;padding:10px;">
+              <img src="assets/art/stargazer-astronaut.jpg" width="2000" height="1119" alt="Example cinematic illustration: a pink dragon-shark astronaut gazing at a purple planet." loading="lazy" style="border-radius:16px">
+              <figcaption style="padding:12px 8px 4px;color:var(--muted);font-weight:700;font-size:.9rem">Example: “Stargazer” — cinematic illustration</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" id="panel-extra" aria-labelledby="tab-extra" hidden>
+          <h3 style="text-align:center;margin-bottom:18px">Backgrounds</h3>
+          <div class="bg-list" id="price-bg"></div>
+          <h3 style="text-align:center;margin:40px 0 18px">Additional charges</h3>
+          <div class="card" style="max-width:760px;margin:0 auto;overflow-x:auto">
+            <table class="addon-table">
+              <thead><tr><th scope="col">Extra</th><th scope="col">Price</th></tr></thead>
+              <tbody id="price-addons"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="price-note reveal">♡ A character ref sheet is required for all commissions · SFW only · Full payment is required before artwork is started · Two minor revisions are included during the sketch stage · Major or additional revisions may cost extra.</p>
+      </div>
+    </section>
+
+    <!-- ============ QUOTE CALCULATOR ============ -->
+    <section class="section" id="quote" aria-labelledby="quote-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">quote calculator</div>
+          <h2 id="quote-title">What would <span class="grad-text">yours</span> cost?</h2>
+          <p>Build your dream piece and get an instant estimate. When you're happy, send it straight to the request form.</p>
+        </div>
+
+        <div class="calc">
+          <form class="card calc-form" id="calc" onsubmit="return false" aria-label="Commission quote calculator">
+            <fieldset class="field-group">
+              <legend>1. What kind of commission?</legend>
+              <div class="seg" id="calc-type">
+                <label><input type="radio" name="type" value="standard" checked><span>Illustration</span></label>
+                <label><input type="radio" name="type" value="chibi"><span>Chibi</span></label>
+                <label><input type="radio" name="type" value="sticker"><span>Stickers</span></label>
+                <label><input type="radio" name="type" value="ref"><span>Ref Sheet</span></label>
+                <label><input type="radio" name="type" value="cinematic"><span>Cinematic</span></label>
+              </div>
+            </fieldset>
+
+            <!-- Illustration -->
+            <div class="calc-panel" data-for="standard">
+              <fieldset class="field-group">
+                <legend>2. Size</legend>
+                <div class="seg" id="calc-size"></div>
+              </fieldset>
+              <fieldset class="field-group">
+                <legend>3. Finish</legend>
+                <div class="seg" id="calc-finish"></div>
+              </fieldset>
+              <div class="field-group">
+                <label class="field-label" for="calc-bg">4. Background</label>
+                <select class="select" id="calc-bg" name="bg"></select>
+              </div>
+            </div>
+
+            <!-- Chibi -->
+            <div class="calc-panel" data-for="chibi" hidden>
+              <fieldset class="field-group">
+                <legend>2. Size</legend>
+                <div class="seg" id="calc-chibi"></div>
+              </fieldset>
+            </div>
+
+            <!-- Stickers -->
+            <div class="calc-panel" data-for="sticker" hidden>
+              <fieldset class="field-group">
+                <legend>2. How many?</legend>
+                <div class="seg" id="calc-sticker"></div>
+              </fieldset>
+            </div>
+
+            <!-- Ref sheet -->
+            <div class="calc-panel" data-for="ref" hidden>
+              <fieldset class="field-group">
+                <legend>2. Sheet type</legend>
+                <div class="seg" id="calc-ref"></div>
+              </fieldset>
+              <div class="field-group">
+                <span class="field-label" id="expr-label">3. Extra expressions <span class="hint" id="expr-hint">+$20 each</span></span>
+                <div class="stepper-row">
+                  <div class="stepper" role="group" aria-labelledby="expr-label">
+                    <button type="button" data-step="expr" data-delta="-1" aria-label="Fewer expressions">−</button>
+                    <output id="calc-expr" aria-live="polite">0</output>
+                    <button type="button" data-step="expr" data-delta="1" aria-label="More expressions">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Extra characters (illustration / chibi / cinematic) -->
+            <div class="field-group" id="chars-group">
+              <span class="field-label" id="chars-label">Extra characters <span class="hint">+85% of base price each</span></span>
+              <div class="stepper-row">
+                <div class="stepper" role="group" aria-labelledby="chars-label">
+                  <button type="button" data-step="chars" data-delta="-1" aria-label="Fewer characters">−</button>
+                  <output id="calc-chars" aria-live="polite">0</output>
+                  <button type="button" data-step="chars" data-delta="1" aria-label="More characters">+</button>
+                </div>
+                <small id="chars-total">1 character total</small>
+              </div>
+            </div>
+
+            <fieldset class="field-group">
+              <legend>Add-ons <span class="hint">ranges depend on complexity</span></legend>
+              <div class="checks" id="calc-addons"></div>
+            </fieldset>
+
+            <fieldset class="field-group" style="margin-bottom:0">
+              <legend>Extras</legend>
+              <div class="checks">
+                <label class="check"><input type="checkbox" id="calc-rush"> Rush commission <em>+35%</em></label>
+                <label class="check"><input type="checkbox" id="calc-commercial"> Commercial use license <em>+100%</em></label>
+              </div>
+            </fieldset>
+          </form>
+
+          <aside class="card quote" aria-live="polite" aria-labelledby="quote-h">
+            <h3 id="quote-h">✦ Your estimate</h3>
+            <div class="quote-total" id="quote-total">$95<span class="plus">+</span></div>
+            <p class="quote-sub" id="quote-sub">starting price</p>
+            <ul class="quote-lines" id="quote-lines"></ul>
+            <button class="btn btn-primary" type="button" id="quote-send">Request this commission →</button>
+            <p class="fine">This is an estimate, not a final price. Jamzie will confirm your exact quote before you pay. Please don't send payment until your commission is accepted!</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROCESS ============ -->
+    <section class="section alt" id="process" aria-labelledby="process-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">how it works</div>
+          <h2 id="process-title">From idea to <span class="grad-text">finished art</span></h2>
+          <p>Here's exactly what happens after you hit “send”.</p>
+        </div>
+        <ol class="steps">
+          <li class="card step reveal"><h3>Send a request</h3><p>Fill out the request form with your character's ref sheet (required!) and what you'd like drawn.</p><span class="tag">you</span></li>
+          <li class="card step reveal"><h3>Accepted &amp; quoted</h3><p>I'll review it, confirm the details and send your final price. Please don't pay until your commission is accepted!</p><span class="tag">jamzie</span></li>
+          <li class="card step reveal"><h3>Payment secures your slot</h3><p>Full payment (100%) up front locks in your spot in the queue. No deposits or payment plans.</p><span class="tag">you</span></li>
+          <li class="card step reveal"><h3>Sketch &amp; revisions</h3><p>You'll see the sketch first. Two minor revisions are included at this stage — this is the best time for changes!</p><span class="tag">together</span></li>
+          <li class="card step reveal"><h3>Lineart, color &amp; render</h3><p>I bring it to life, sharing work-in-progress updates at key stages. Watch it move along the queue below.</p><span class="tag">jamzie</span></li>
+          <li class="card step reveal"><h3>Delivery ♡</h3><p>Your finished art arrives digitally in high resolution, with a transparent version when applicable. Back it up!</p><span class="tag">yay!</span></li>
+        </ol>
+
+        <div class="policy-strip">
+          <div class="card policy reveal"><div class="pi" aria-hidden="true">⏳</div><div><b><span class="js-turnaround">2–12 weeks</span></b><span>Estimated turnaround, depending on complexity &amp; workload.</span></div></div>
+          <div class="card policy reveal"><div class="pi" aria-hidden="true">💳</div><div><b>100% upfront</b><span>Paid in full after acceptance, before work begins.</span></div></div>
+          <div class="card policy reveal"><div class="pi" aria-hidden="true">✏️</div><div><b>2 minor revisions</b><span>Included at the sketch stage. Bigger changes: $10–$50+.</span></div></div>
+          <div class="card policy reveal"><div class="pi" aria-hidden="true">⚡</div><div><b>Need it sooner?</b><span>Rush commissions are +35%, subject to availability.</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BOUNDARIES & USAGE ============ -->
+    <section class="section" id="usage" aria-labelledby="usage-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">good to know</div>
+          <h2 id="usage-title">What I draw &amp; <span class="grad-text">how you can use it</span></h2>
+        </div>
+
+        <div class="rights rights-3">
+          <div class="card reveal"><h3><span class="badge love">♡</span> Love to draw</h3><ul class="love-list" id="list-loves"></ul></div>
+          <div class="card reveal"><h3><span class="badge ask">?</span> Ask me first</h3><ul class="ask-list" id="list-ask"></ul></div>
+          <div class="card reveal"><h3><span class="badge no">✕</span> Won't draw</h3><ul class="no-list" id="list-wont"></ul></div>
+        </div>
+
+        <div class="rights" style="margin-top:20px">
+          <div class="card reveal">
+            <h3><span class="badge yes">✓</span> You're welcome to…</h3>
+            <ul class="yes-list">
+              <li>Repost the art with credit to <strong>JamzieBites</strong></li>
+              <li>Use it as a profile picture, banner or wallpaper</li>
+              <li>Display it in your character galleries</li>
+              <li>Print it or make merch for <em>personal</em> use</li>
+              <li>Share refs with other artists &amp; fursuit makers</li>
+              <li>Pass it along if you transfer the character (terms stay intact)</li>
+              <li>Crop or resize it a little for display — signature intact</li>
+            </ul>
+          </div>
+          <div class="card reveal">
+            <h3><span class="badge no">✕</span> Please don't…</h3>
+            <ul class="no-list">
+              <li>Edit, trace, recolor, or draw over the artwork</li>
+              <li>Add or remove markings, clothing or features</li>
+              <li>Remove, cover or alter my signature / watermark</li>
+              <li>Have another artist finish or edit my work</li>
+              <li>Use it commercially without a commercial license</li>
+              <li>Feed it to AI or use it for NFTs — ever</li>
+              <li>Post unpaid, refunded or canceled art</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="no-ai-banner reveal">
+          <span class="stamp">✦ 100% human-made</span>
+          <p>My artwork may not be used for AI training, generative AI, “enhancements”, style replication, NFTs or blockchain projects — this applies to sketches, ref sheets, finished pieces and commercially licensed work alike.</p>
+          <a class="btn btn-sm" href="tos.html#ai">Read the policy</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ QUEUE ============ -->
+    <section class="section alt" id="queue" aria-labelledby="queue-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">live-ish status</div>
+          <h2 id="queue-title">Commission <span class="grad-text">Queue</span></h2>
+          <p>Already commissioned me? Find your spot here. Anonymous clients are listed as “Anonymous”.</p>
+        </div>
+        <div class="queue-wrap">
+          <div class="card slots-bar reveal">
+            <div>
+              <div class="big" id="slots-big">Slots</div>
+              <small id="slots-small" style="color:var(--muted);font-weight:700"></small>
+            </div>
+            <div class="slot-dots" id="slot-dots" aria-hidden="true"></div>
+          </div>
+          <ol class="queue-list" id="queue-list"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container about">
+        <div class="avatar reveal">
+          <div class="avatar-inner" id="avatar-inner">
+            <!-- Replace with: <img src="assets/art/jamzie-avatar.png" alt="Jamzie's self-portrait"> -->
+            <img src="assets/logo.svg" alt="" style="width:62%;height:auto;object-fit:contain">
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="eyebrow" style="justify-content:flex-start">nice to meet you</div>
+          <h2 id="about-title">Hi, I'm <span class="grad-text">Jamzie</span>! 🍓</h2>
+          <div id="about-text"></div>
+          <div class="sig">— Jamzie <span aria-hidden="true">⭐</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section alt" id="faq" aria-labelledby="faq-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">questions?</div>
+          <h2 id="faq-title">Frequently <span class="grad-text">Asked</span></h2>
+        </div>
+        <div class="faq-tools reveal">
+          <label class="sr-only" for="faq-search">Search the FAQ</label>
+          <input class="input faq-search" id="faq-search" type="search" placeholder="Search questions… (try “refund” or “NSFW”)">
+        </div>
+        <div class="faq" id="faq-list">
+          <details class="card"><summary>Are commissions open right now?</summary><div class="answer"><p>Check the badge at the very top of the page — it always shows whether commissions are open, waitlist-only, or closed, plus how many slots are left this round.</p></div></details>
+          <details class="card"><summary>How do I pay?</summary><div class="answer"><p>Once your commission is <strong>accepted</strong>, I'll send payment details. Full payment (100%) is required up front before any artwork is started — deposits, partial payments and payment plans aren't accepted. Your slot is secured once payment arrives.</p><p><strong>Please don't send payment until your commission has been accepted.</strong></p></div></details>
+          <details class="card"><summary>How long will it take?</summary><div class="answer"><p>Usually 2–12 weeks depending on complexity, workload and life. Larger projects can take longer. Deadlines aren't guaranteed unless we agree on one in writing. Need it sooner? Rush commissions are +35% when I have room.</p></div></details>
+          <details class="card"><summary>How many revisions do I get?</summary><div class="answer"><p>Two minor revisions are included during the sketch stage. Additional revisions or major changes after sketch approval may cost $10–$50+, and a complete character change may count as a new commission. If <em>I</em> make a mistake, I'll fix it for free!</p></div></details>
+          <details class="card"><summary>Do you draw mature / NSFW content?</summary><div class="answer"><p>No — I'm <strong>SFW only</strong>. Sensitive (but safe-for-work) themes can be discussed beforehand, and I may decline any subject matter I'm not comfortable with.</p></div></details>
+          <details class="card"><summary>What do I need to send you?</summary><div class="answer"><p>A <strong>character reference sheet is required</strong> for every commission, plus any specific requests (pose, expression, outfit, background, vibe). Clear, accurate and up-to-date, please!</p></div></details>
+          <details class="card"><summary>My character doesn't have a ref sheet / isn't designed yet. Can you help?</summary><div class="answer"><p>Yes! Order a <strong>Custom Design Ref Sheet</strong> — a Simple or Deluxe ref sheet plus the custom character design add-on (+$50–$100). Custom designs are <em>only</em> available as a ref sheet, not as part of a scenic piece or illustration. Once your character has a ref, you can commission anything else!</p></div></details>
+          <details class="card"><summary>Do you do art trades?</summary><div class="answer"><p>Art trades are currently <strong>open</strong>! Send a request with “Art Trade” as the type and a link to your own art, and we'll work out the details.</p></div></details>
+          <details class="card"><summary>Can I commission art of someone else's character?</summary><div class="answer"><p>Only if you have the owner's permission. Gifts are lovely — just make sure it's okay with them first!</p></div></details>
+          <details class="card"><summary>Can I use my commission as a PFP, banner or print?</summary><div class="answer"><p>Yes! Profile pictures, banners, wallpapers, character galleries and prints/merch for personal use are all welcome — just credit <strong>JamzieBites</strong> when you post it. Selling it, monetizing it or using it for a brand needs a commercial license (+100%).</p></div></details>
+          <details class="card"><summary>What counts as commercial use?</summary><div class="answer"><p>Merch sales, monetized content, streaming assets, business branding, ads, games, publications and other for-profit uses. Commercial licensing starts at +100% of the commission price; larger projects may need a separate agreement. It doesn't transfer copyright or allow edits, AI use or NFTs.</p></div></details>
+          <details class="card"><summary>Can I edit or recolor the art, or have another artist finish it?</summary><div class="answer"><p>No, please don't — that includes tracing, drawing over, recoloring, adding/removing features, animating, or removing my watermark. Owning the character doesn't grant permission to alter my illustrations. Just message me and I'll happily make changes for you!</p></div></details>
+          <details class="card"><summary>Can I use the art with AI or for NFTs?</summary><div class="answer"><p>Never. That includes uploading it to generative AI tools, AI “enhancements” or variations, training datasets, style replication, and minting or selling NFTs — even for commercially licensed pieces.</p></div></details>
+          <details class="card"><summary>Can my commission be private or anonymous?</summary><div class="answer"><p>Yes! You can ask to be listed anonymously or for a delayed public reveal. Fully private commissions (never posted) need to be discussed first and may have an extra fee.</p></div></details>
+          <details class="card"><summary>What's your refund policy?</summary><div class="answer"><p>Full refunds are available if I haven't started yet. Once work has begun, refunds depend on the time and progress invested, and completed portions aren't refundable (except where required by law). If I cancel and can't finish your piece, you'll get a full refund. See the <a href="tos.html#refunds">Terms</a> for the details.</p></div></details>
+          <details class="card"><summary>Will I get the PSD / layered file?</summary><div class="answer"><p>Finished art is delivered digitally in high resolution, with a transparent version when applicable. PSDs and layered files aren't included unless we agree on it separately. Please keep your own backups — I can't store files forever.</p></div></details>
+          <details class="card"><summary>Can you draw in another artist's style?</summary><div class="answer"><p>Sorry, no — I only draw in my own style (which may naturally evolve over time!).</p></div></details>
+          <p class="gallery-note" id="faq-empty" hidden>No questions match that — try the <a href="tos.html">full Terms</a> or just ask me!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ REQUEST FORM ============ -->
+    <section class="section" id="request" aria-labelledby="request-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">let's make something</div>
+          <h2 id="request-title">Request a <span class="grad-text">Commission</span></h2>
+          <p id="request-lead">Fill this out and I'll get back to you! Sending a request doesn't commit you to anything.</p>
+        </div>
+
+        <div class="request">
+          <aside class="card request-side reveal">
+            <h3>Before you send ♡</h3>
+            <ol>
+              <li>Read the <a href="tos.html">Terms of Service</a>.</li>
+              <li>Have clear reference images ready (links are perfect).</li>
+              <li>Use the <a href="#quote">quote calculator</a> for a ballpark price.</li>
+              <li><strong>Don't send payment</strong> until I accept your request.</li>
+            </ol>
+            <div id="contact-lines"></div>
+          </aside>
+
+          <form class="card request-form reveal" id="request-form" novalidate>
+            <div class="prefill-note" id="prefill-note">
+              <span>✦ Quote attached: <span id="prefill-text"></span></span>
+              <button type="button" class="btn btn-sm btn-ghost" id="prefill-clear">Remove</button>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="f-name">Your name / username <span class="req">*</span></label>
+                <input class="input" id="f-name" name="name" autocomplete="nickname" required>
+                <span class="err">What should I call you?</span>
+              </div>
+              <div class="field">
+                <label for="f-contact">Where can I reach you? <span class="req">*</span></label>
+                <input class="input" id="f-contact" name="contact" placeholder="Discord @ or email" required>
+                <span class="err">I need a way to reply to you!</span>
+              </div>
+              <div class="field">
+                <label for="f-type">Commission type <span class="req">*</span></label>
+                <select class="select" id="f-type" name="type" required>
+                  <option value="">Choose one…</option>
+                  <option>Headshot</option>
+                  <option>Half Body</option>
+                  <option>Full Body</option>
+                  <option>Chibi</option>
+                  <option>Sticker(s)</option>
+                  <option>Simple Reference Sheet</option>
+                  <option>Deluxe Reference Sheet</option>
+                  <option>Cinematic Illustration</option>
+                  <option>Custom Design Ref Sheet</option>
+                  <option>Art Trade</option>
+                  <option>Something else</option>
+                </select>
+                <span class="err">Pick a commission type.</span>
+              </div>
+              <div class="field">
+                <label for="f-char">Character name(s)</label>
+                <input class="input" id="f-char" name="character" placeholder="e.g. Berry, the space dragon">
+              </div>
+              <div class="field full">
+                <label for="f-refs">Character ref sheet link(s) <span class="req">*</span></label>
+                <textarea class="input" id="f-refs" name="references" style="min-height:80px" placeholder="Link to your character's ref sheet (Toyhouse, Google Drive, imgur…) plus any extra refs, one per line" required></textarea>
+                <span class="help">A character ref sheet is <strong>required</strong> for all commissions. No ref sheet yet? Choose <em>Custom Design Ref Sheet</em> above and I'll design your character first!</span>
+                <span class="err">Please add your ref sheet link — or choose “Custom Design Ref Sheet” and write “new design” here.</span>
+              </div>
+              <div class="field full">
+                <label for="f-desc">Describe your idea <span class="req">*</span></label>
+                <textarea class="input" id="f-desc" name="description" placeholder="Pose, expression, outfit, background, mood, colors… the more the better!" required></textarea>
+                <span class="err">Tell me a little about what you'd like!</span>
+              </div>
+              <div class="field">
+                <label for="f-deadline">Deadline (if any)</label>
+                <input class="input" id="f-deadline" name="deadline" type="date">
+                <span class="help">Deadlines only apply if we agree on one in writing.</span>
+              </div>
+              <div class="field">
+                <label for="f-privacy">Privacy</label>
+                <select class="select" id="f-privacy" name="privacy">
+                  <option>Public — credit me when posting</option>
+                  <option>Anonymous — don't name me</option>
+                  <option>Delayed reveal (e.g. it's a gift)</option>
+                  <option>Fully private (needs discussion, may cost extra)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="agree" style="margin-top:16px">
+              <label class="check"><input type="checkbox" id="f-sfw" required> My request is SFW — I understand Jamzie only takes safe-for-work commissions.</label>
+              <label class="check"><input type="checkbox" id="f-refsheet" required> My character has a ref sheet (or I'm ordering a Custom Design Ref Sheet).</label>
+              <label class="check"><input type="checkbox" id="f-perm" required> I own this character or have the owner's permission to commission it.</label>
+              <label class="check"><input type="checkbox" id="f-tos" required> I have read and agree to the <a href="tos.html" target="_blank" rel="noopener">Terms of Service</a>.</label>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit" id="f-submit">Send my request ✦</button>
+              <small id="draft-note">Your draft saves automatically on this device.</small>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="footer-clouds" aria-hidden="true">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="currentColor" d="M0 50c60-20 120-26 180-12s100 6 150-10 120-20 170 0 90 26 160 16 110-30 180-26 110 22 170 20 100-22 170-26 110 12 140 20 70 10 120 6V80H0z"/></svg>
+    </div>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="logo" href="#top" aria-label="Back to top">
+            <img class="logo-mark" src="assets/logo.svg" alt="" width="38" height="38">
+            <span class="logo-word">Jamzie<span class="grad-text">Bites</span></span>
+          </a>
+          <p style="color:var(--ink-soft);margin-top:12px;max-width:340px">Soft, sparkly, 100% hand-drawn furry art. Thank you for supporting an independent artist! ♡</p>
+          <div class="socials" id="socials"></div>
+        </div>
+        <div>
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#prices">Prices</a></li>
+            <li><a href="#quote">Quote calculator</a></li>
+            <li><a href="#queue">Queue</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Info</h4>
+          <ul>
+            <li><a href="#request">Request a commission</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="tos.html">Terms of Service</a></li>
+            <li><a href="tos.html#ai">AI &amp; NFT policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span id="year">2026</span> JamzieBites — All Rights Reserved.</span>
+        <span class="pills"><span>SFW only</span><span>no AI</span><span>no NFTs</span><span>made with ♡</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox protect" id="lightbox" role="dialog" aria-modal="true" aria-label="Artwork viewer">
+    <button class="lb-btn lb-close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <button class="lb-btn lb-prev" type="button" aria-label="Previous artwork"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 5-7 7 7 7"/></svg></button>
+    <img id="lb-img" src="" alt="">
+    <button class="lb-btn lb-next" type="button" aria-label="Next artwork"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>
+    <div class="lb-caption"><strong id="lb-title"></strong><span id="lb-tier"></span></div>
+  </div>
+
+  <!-- Request ready modal -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="card modal-box">
+      <button class="icon-btn modal-close" type="button" aria-label="Close">✕</button>
+      <h3 id="modal-title">Your request is ready! ✦</h3>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <button class="icon-btn to-top" type="button" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 15 6-6 6 6"/></svg>
+  </button>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# ai.txt — JamzieBites
+# No artwork, text or other content on this site may be used to train,
+# fine-tune or prompt AI / machine-learning models, or for NFTs.
+User-Agent: *
+Disallow: /
+Disallow: *.jpg
+Disallow: *.jpeg
+Disallow: *.png
+Disallow: *.webp
+Disallow: *.gif

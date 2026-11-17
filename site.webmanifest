@@ -1,0 +1,11 @@
+{
+  "name": "JamzieBites Commissions",
+  "short_name": "JamzieBites",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbf6ff",
+  "theme_color": "#ff8fc4",
+  "icons": [
+    { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
