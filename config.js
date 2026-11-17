@@ -44,7 +44,7 @@ window.JAMZIE = {
   pronouns: "she/her/it",
   about: [
     "Hi! I'm Jamzie (she/her/it) — a furry & artist running on sugar, spice & questionable advice. When I'm not drawing, I'm baking treats & causing mischief. 🍓",
-    "I draw soft, sparkly, glow-y furry art: everything from squishy little chibis and sticker packs to moody, fully rendered cinematic scenes. Every piece is drawn by hand, in my own style, with a lot of love for your characters. SFW only, and no AI, ever. ♡"
+    "I draw soft, sparkly, glow-y furry art: everything from squishy little chibis and sticker packs to moody, fully rendered cinematic scenes. Every piece is drawn by hand, in my own style, with a lot of love for your characters. No AI, ever. ♡"
   ],
   loves: [
     "Fluffy & floofy OCs",
@@ -54,7 +54,7 @@ window.JAMZIE = {
     "Moody night & space scenes"
   ],
   wontDraw: [
-    "NSFW / adult content — SFW only!",
+    "Anything involving minors or underage-looking characters in NSFW",
     "Hateful, discriminatory or exploitative content",
     "Anything illegal",
     "Copies of another artist's style",
@@ -62,8 +62,9 @@ window.JAMZIE = {
     "Anything I'm not comfortable with"
   ],
   askFirst: [
+    "NSFW / mature content (+$95 · 18+ clients & characters only)",
     "Art trades — currently open!",
-    "Sensitive (but SFW) themes",
+    "Sensitive themes",
     "Fully private (never-posted) commissions",
     "Big or unusual projects"
   ],
@@ -138,6 +139,7 @@ window.JAMZIE = {
     ],
     cinematic: 250,
     expression: 20,               // each additional ref sheet expression
+    nsfw: 95,                     // flat fee for NSFW / mature content
     addons: [
       { id: "markings", label: "Complex character markings", min: 15, max: 35 },
       { id: "wings",    label: "Wings / additional limbs",   min: 15, max: 30 },

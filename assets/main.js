@@ -419,6 +419,7 @@
       ad.push([a.label + note, "+" + money(a.min) + "–" + money(a.max)]);
     });
     ad.push(["Additional ref sheet expression", "+" + money(P.expression || 20)]);
+    ad.push(["NSFW / mature content (18+ only)", "+" + money(P.nsfw || 95)]);
     ad.push(["Rush commission", pct(P.rushRate || 0.35)]);
     ad.push(["Commercial usage", pct(P.commercialRate || 1)]);
     $("#price-addons").innerHTML = ad.map(function (r) { return "<tr><td>" + esc(r[0]) + "</td><td>" + esc(r[1]) + "</td></tr>"; }).join("");
@@ -467,6 +468,7 @@
       return '<label class="check" data-only="' + esc((a.only || []).join(" ")) + '"><input type="checkbox" name="addon" value="' + esc(a.id) + '"> ' + esc(a.label) + " <em>+" + money(a.min) + "–" + money(a.max) + "</em></label>";
     }).join("");
     $("#expr-hint").textContent = "+" + money(P.expression || 20) + " each";
+    if ($("#calc-nsfw-price")) $("#calc-nsfw-price").textContent = "+" + money(P.nsfw || 95);
 
     var counters = { chars: 0, expr: 0 };
     var finishLabel = function (sizeObj) {
@@ -516,6 +518,8 @@
         if (a) add(a.label, a.min, a.max);
       });
 
+      if ($("#calc-nsfw") && $("#calc-nsfw").checked) add("NSFW / mature content", P.nsfw || 95);
+
       var subMin = min, subMax = max;
       if ($("#calc-rush").checked) add("Rush (+" + Math.round((P.rushRate || 0.35) * 100) + "%)", subMin * (P.rushRate || 0.35), subMax * (P.rushRate || 0.35), "mult");
       if ($("#calc-commercial").checked) add("Commercial license (+" + Math.round((P.commercialRate || 1) * 100) + "%)", subMin * (P.commercialRate || 1), subMax * (P.commercialRate || 1), "mult");
@@ -559,7 +563,7 @@
     $("#quote-send").addEventListener("click", function () {
       var q = compute();
       var summary = q.lines.map(function (l) { return "• " + l.label + ": " + (l.cls ? "+" : "") + range(l.lo, l.hi); }).join("\n");
-      attachedQuote = { short: q.baseLabel + " — est. " + range(q.min, q.max) + "+", full: summary + "\nEstimated total: " + range(q.min, q.max) + "+", formType: q.formType };
+      attachedQuote = { short: q.baseLabel + " — est. " + range(q.min, q.max) + "+", full: summary + "\nEstimated total: " + range(q.min, q.max) + "+", formType: q.formType, nsfw: $("#calc-nsfw").checked };
       applyQuote();
       var req = $("#request");
       if (req) req.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
@@ -576,6 +580,8 @@
       note.classList.add("show");
       var sel = $("#f-type");
       if (sel && attachedQuote.formType) sel.value = attachedQuote.formType;
+      var m = $("#f-mature");
+      if (m && attachedQuote.nsfw && !m.checked) { m.checked = true; m.dispatchEvent(new Event("change")); }
     } else {
       note.classList.remove("show");
     }
@@ -641,6 +647,15 @@
       }
     } catch (e) {}
 
+    var mature = $("#f-mature"), adultRow = $("#agree-adult"), adultBox = $("#f-adult");
+    var syncMature = function () {
+      adultRow.hidden = !mature.checked;
+      adultBox.required = mature.checked;
+      if (!mature.checked) { adultBox.checked = false; adultRow.classList.remove("invalid"); }
+    };
+    mature.addEventListener("change", syncMature);
+    syncMature();
+
     var saveT;
     form.addEventListener("input", function (e) {
       clearTimeout(saveT); saveT = setTimeout(saveDraft, 300);
@@ -664,8 +679,8 @@
       lines.push("", "References:", v("#f-refs"), "", "Idea:", v("#f-desc"), "",
         "Deadline: " + (v("#f-deadline") || "none"),
         "Privacy: " + v("#f-privacy"),
+        "NSFW / mature: " + (mature.checked ? "Yes (+" + money(P.nsfw || 95) + ") — client & all characters confirmed 18+" : "No"),
         "",
-        "✓ My request is SFW",
         "✓ My character has a ref sheet (or I'm ordering a custom design ref sheet)",
         "✓ I own this character or have permission",
         "✓ I have read and agree to the Terms of Service");
@@ -738,7 +753,7 @@
         }).then(function (r) {
           if (!r.ok) throw new Error("bad status");
           store(DRAFT_KEY, null);
-          form.reset(); attachedQuote = null; applyQuote();
+          form.reset(); attachedQuote = null; applyQuote(); syncMature();
           openModal("Request sent! ♡", "<p>Thank you so much! I'll look over your request and get back to you at the contact you gave me. Please don't send any payment until I've accepted your commission.</p><div class=\"modal-actions\"><a class=\"btn btn-primary\" href=\"#gallery\">Back to the gallery</a></div>");
           $$("#modal-body a").forEach(function (a) { a.addEventListener("click", closeModal); });
         }).catch(function () {

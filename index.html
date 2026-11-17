@@ -87,7 +87,7 @@
             Soft, sparkly art<br>
             <span class="line2">for your <span class="squiggle grad-text">favorite OCs<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 Q 25 2, 50 11 T 100 11 T 150 11 T 198 9"/></svg></span> ♡</span>
           </h1>
-          <p class="hero-lead">Hi, I'm <strong>Jamzie</strong>! I draw cozy, glowy furry art — from squishy chibis and sticker packs to fully rendered, cinematic scenes. Every piece is hand-drawn in my own style. SFW only — and no AI, ever.</p>
+          <p class="hero-lead">Hi, I'm <strong>Jamzie</strong>! I draw cozy, glowy furry art — from squishy chibis and sticker packs to fully rendered, cinematic scenes. Every piece is hand-drawn in my own style. No AI, ever.</p>
           <div class="hero-ctas">
             <a class="btn btn-primary" href="#request">Request a commission</a>
             <a class="btn" href="#quote">Get a price estimate</a>
@@ -123,8 +123,8 @@
     <!-- ============ MARQUEE ============ -->
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>chibis</span><span>sticker packs</span><span>reference sheets</span><span>full renders</span><span>cinematic scenes</span><span>fluffy OCs</span><span>dragons &amp; hybrids</span><span>100% hand-drawn</span><span>SFW only</span><span>art trades open</span>
-        <span>chibis</span><span>sticker packs</span><span>reference sheets</span><span>full renders</span><span>cinematic scenes</span><span>fluffy OCs</span><span>dragons &amp; hybrids</span><span>100% hand-drawn</span><span>SFW only</span><span>art trades open</span>
+        <span>chibis</span><span>sticker packs</span><span>reference sheets</span><span>full renders</span><span>cinematic scenes</span><span>fluffy OCs</span><span>dragons &amp; hybrids</span><span>100% hand-drawn</span><span>art trades open</span>
+        <span>chibis</span><span>sticker packs</span><span>reference sheets</span><span>full renders</span><span>cinematic scenes</span><span>fluffy OCs</span><span>dragons &amp; hybrids</span><span>100% hand-drawn</span><span>art trades open</span>
       </div>
     </div>
 
@@ -225,7 +225,7 @@
           </div>
         </div>
 
-        <p class="price-note reveal">♡ A character ref sheet is required for all commissions · SFW only · Full payment is required before artwork is started · Two minor revisions are included during the sketch stage · Major or additional revisions may cost extra.</p>
+        <p class="price-note reveal">♡ A character ref sheet is required for all commissions · NSFW is +$95 (18+ only) · Full payment is required before artwork is started · Two minor revisions are included during the sketch stage · Major or additional revisions may cost extra.</p>
       </div>
     </section>
 
@@ -322,6 +322,7 @@
             <fieldset class="field-group" style="margin-bottom:0">
               <legend>Extras</legend>
               <div class="checks">
+                <label class="check"><input type="checkbox" id="calc-nsfw"> NSFW / mature (18+) <em id="calc-nsfw-price">+$95</em></label>
                 <label class="check"><input type="checkbox" id="calc-rush"> Rush commission <em>+35%</em></label>
                 <label class="check"><input type="checkbox" id="calc-commercial"> Commercial use license <em>+100%</em></label>
               </div>
@@ -470,7 +471,7 @@
           <details class="card"><summary>How do I pay?</summary><div class="answer"><p>Once your commission is <strong>accepted</strong>, I'll send payment details. Full payment (100%) is required up front before any artwork is started — deposits, partial payments and payment plans aren't accepted. Your slot is secured once payment arrives.</p><p><strong>Please don't send payment until your commission has been accepted.</strong></p></div></details>
           <details class="card"><summary>How long will it take?</summary><div class="answer"><p>Usually 2–12 weeks depending on complexity, workload and life. Larger projects can take longer. Deadlines aren't guaranteed unless we agree on one in writing. Need it sooner? Rush commissions are +35% when I have room.</p></div></details>
           <details class="card"><summary>How many revisions do I get?</summary><div class="answer"><p>Two minor revisions are included during the sketch stage. Additional revisions or major changes after sketch approval may cost $10–$50+, and a complete character change may count as a new commission. If <em>I</em> make a mistake, I'll fix it for free!</p></div></details>
-          <details class="card"><summary>Do you draw mature / NSFW content?</summary><div class="answer"><p>No — I'm <strong>SFW only</strong>. Sensitive (but safe-for-work) themes can be discussed beforehand, and I may decline any subject matter I'm not comfortable with.</p></div></details>
+          <details class="card"><summary>Do you draw mature / NSFW content?</summary><div class="answer"><p>Yes! NSFW is a flat <strong>+$95</strong> on top of the commission price. It must be discussed with me beforehand, and <strong>clients and all characters involved must be 18+</strong>. I may decline any subject matter I'm not comfortable with.</p></div></details>
           <details class="card"><summary>What do I need to send you?</summary><div class="answer"><p>A <strong>character reference sheet is required</strong> for every commission, plus any specific requests (pose, expression, outfit, background, vibe). Clear, accurate and up-to-date, please!</p></div></details>
           <details class="card"><summary>My character doesn't have a ref sheet / isn't designed yet. Can you help?</summary><div class="answer"><p>Yes! Order a <strong>Custom Design Ref Sheet</strong> — a Simple or Deluxe ref sheet plus the custom character design add-on (+$50–$100). Custom designs are <em>only</em> available as a ref sheet, not as part of a scenic piece or illustration. Once your character has a ref, you can commission anything else!</p></div></details>
           <details class="card"><summary>Do you do art trades?</summary><div class="answer"><p>Art trades are currently <strong>open</strong>! Send a request with “Art Trade” as the type and a link to your own art, and we'll work out the details.</p></div></details>
@@ -572,10 +573,13 @@
                   <option>Fully private (needs discussion, may cost extra)</option>
                 </select>
               </div>
+              <div class="field full">
+                <label class="check" style="font-weight:700"><input type="checkbox" id="f-mature" name="mature"> This request includes NSFW / mature content (+$95)</label>
+              </div>
             </div>
 
             <div class="agree" style="margin-top:16px">
-              <label class="check"><input type="checkbox" id="f-sfw" required> My request is SFW — I understand Jamzie only takes safe-for-work commissions.</label>
+              <label class="check" id="agree-adult" hidden><input type="checkbox" id="f-adult"> I confirm I am 18+ and all characters involved are 18+.</label>
               <label class="check"><input type="checkbox" id="f-refsheet" required> My character has a ref sheet (or I'm ordering a Custom Design Ref Sheet).</label>
               <label class="check"><input type="checkbox" id="f-perm" required> I own this character or have the owner's permission to commission it.</label>
               <label class="check"><input type="checkbox" id="f-tos" required> I have read and agree to the <a href="tos.html" target="_blank" rel="noopener">Terms of Service</a>.</label>
@@ -627,7 +631,7 @@
       </div>
       <div class="footer-bottom">
         <span>© <span id="year">2026</span> JamzieBites — All Rights Reserved.</span>
-        <span class="pills"><span>SFW only</span><span>no AI</span><span>no NFTs</span><span>made with ♡</span></span>
+        <span class="pills"><span>no AI</span><span>no NFTs</span><span>made with ♡</span></span>
       </div>
     </div>
   </footer>
