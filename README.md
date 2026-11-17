@@ -47,6 +47,23 @@ As it stands, "Send my request" builds a neat message that the client copies int
 
 If the form ever fails to send, the site falls back to the copy-paste message, so nothing is lost.
 
+## Payments (pay.html)
+
+The **Pay** page sends clients to a Stripe Payment Link. They type in the exact amount you quoted (minimum $25) along with their username. Stripe handles the card, Apple Pay and Google Pay, and emails them a receipt. Each payment shows up in your Stripe dashboard under **Payments**, with the client's username in the "client reference" field.
+
+**Going live (do this before taking real money):**
+
+1. In Stripe, click **Switch to live account** and finish activation: your ID, bank account for payouts, and tax info. Only you can do this.
+2. Still in live mode, go to **Payment Links** and create the same link:
+   - Type: **"Customers choose what to pay"**, USD, minimum $25.
+   - Turn on **collect customer names**.
+   - Add a custom text field: "Username from your commission request".
+   - Under **After payment**, redirect to `https://jamziebites.com/pay.html?paid=1`.
+   - Or ask Claude to set it up again.
+3. Paste the new `https://buy.stripe.com/...` link into `payments.stripeLink` in `config.js`. The "test mode" banner on the Pay page disappears automatically once the link no longer contains `/test_`.
+
+**NSFW payments:** Stripe (and PayPal) don't allow sexually explicit content, and accounts that take payment for it can be frozen with the money held. Don't send NSFW clients to the Stripe link. Put an adult-friendly payment link in `payments.nsfwPayLink` (VGen is one option), or leave it blank and send NSFW clients payment details yourself.
+
 ## Putting it online (free)
 
 Pick one:
