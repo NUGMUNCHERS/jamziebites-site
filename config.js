@@ -30,6 +30,19 @@ window.JAMZIE = {
     formEndpoint: ""      // e.g. "https://formspree.io/f/abcd1234"
   },
 
+  /* ---------- Payments (pay.html) ----------
+     stripeLink: the Stripe Payment Link clients use to pay their quoted amount.
+       A link containing "/test_" is a sandbox link: the Pay page shows a
+       "test mode — no real money" banner. Swap in the LIVE link once her Stripe
+       account is activated (see README).
+     nsfwPayLink: where NSFW commissions are paid. Stripe doesn't allow
+       sexually explicit content, so NSFW payments should NOT use stripeLink.
+       Leave blank to tell NSFW clients that Jamzie will send payment details. */
+  payments: {
+    stripeLink: "https://buy.stripe.com/test_bJe7sL8EB4BG4Xc5hHaIM00",
+    nsfwPayLink: ""
+  },
+
   /* ---------- Social links (blank url = hidden) ---------- */
   socials: [
     { label: "Instagram",    icon: "instagram", url: "https://www.instagram.com/jamziebites/" },
