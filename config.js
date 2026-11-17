@@ -30,6 +30,16 @@ window.JAMZIE = {
     formEndpoint: ""      // e.g. "https://formspree.io/f/abcd1234"
   },
 
+  /* ---------- Database (Supabase) ----------
+     Powers the request form, the admin studio (admin.html) and the live
+     queue / open-closed badge. The "publishable" key is MEANT to be public —
+     the database's Row Level Security rules are what protect the data.
+     Never put a secret key (sb_secret_… / service_role) here. */
+  backend: {
+    url: "https://babujgeapxhrcrrrxoet.supabase.co",
+    key: "sb_publishable_YTkRQn5lPzfN4e3ktXRPjw_Dw14wEPw"
+  },
+
   /* ---------- Payments (pay.html) ----------
      stripeLink: the Stripe Payment Link clients use to pay their quoted amount.
        A link containing "/test_" is a sandbox link: the Pay page shows a

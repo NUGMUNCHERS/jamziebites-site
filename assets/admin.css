@@ -1,0 +1,72 @@
+/* JamzieBites Studio (admin) */
+body.admin { background: var(--bg); min-height: 100vh; }
+.adm-top { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px var(--gutter); background: var(--surface-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.adm-top-actions { display: flex; gap: 8px; align-items: center; }
+.adm-badge { font-family: var(--font-hand); font-weight: 400; font-size: 1rem; color: var(--pink-deep); margin-left: 4px; }
+.adm-main { max-width: 1180px; margin: 0 auto; padding: 24px var(--gutter) 80px; }
+.adm-center { min-height: 70vh; display: grid; place-items: center; }
+.adm-auth { width: min(440px, 100%); padding: 32px; display: grid; gap: 14px; }
+.adm-auth h1 { font-size: 1.8rem; margin: 0; }
+.adm-muted { color: var(--muted); margin: 0; }
+.adm-small { font-size: .85rem; }
+.adm-wide { width: 100%; }
+.adm-error { color: #e23b62; font-weight: 700; font-size: .9rem; margin: 0; min-height: 1.2em; }
+.adm-steps { margin: 0; padding-left: 1.2em; color: var(--ink-soft); }
+.adm-qr { display: grid; place-items: center; background: #fff; border-radius: 14px; padding: 12px; width: fit-content; margin: 0 auto; }
+.adm-qr img { width: 200px; height: 200px; }
+.adm-secret { word-break: break-all; background: var(--bg-2); padding: 2px 6px; border-radius: 6px; font-size: .8rem; }
+.adm-code { font-size: 1.6rem; letter-spacing: .4em; text-align: center; font-family: ui-monospace, Consolas, monospace; }
+
+.adm-grid-top { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+@media (max-width: 760px) { .adm-grid-top { grid-template-columns: repeat(2, 1fr); } }
+.adm-stat { padding: 16px 18px; }
+.adm-stat span { color: var(--muted); font-weight: 800; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+.adm-stat b { display: block; font-family: var(--font-display); font-size: 2rem; line-height: 1.1; }
+
+.adm-shop { padding: 18px 20px; margin-bottom: 18px; }
+.adm-shop h2 { font-size: 1.2rem; margin-bottom: 10px; }
+.adm-shop-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 8px; }
+.adm-shop-row .field { min-width: 160px; }
+
+.adm-toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.adm-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-tabs button { border: 2px solid var(--line); background: var(--surface); color: var(--ink-soft); border-radius: var(--radius-pill); padding: 7px 14px; font-weight: 800; font-size: .88rem; cursor: pointer; }
+.adm-tabs button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.adm-tabs i { font-style: normal; opacity: .7; margin-left: 4px; }
+.adm-toolbar-right { display: flex; gap: 8px; align-items: center; }
+.adm-search { width: 260px; max-width: 60vw; padding: 9px 12px; }
+
+.adm-list { display: grid; gap: 10px; }
+.adm-row { display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 14px 18px; text-align: left; cursor: pointer; width: 100%; color: var(--ink); transition: transform .15s, box-shadow .15s; font: inherit; }
+.adm-row:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.adm-row-main b { font-family: var(--font-display); font-size: 1.08rem; }
+.adm-row-main small, .adm-row-side small { display: block; color: var(--muted); font-weight: 700; margin-top: 2px; }
+.adm-row-side { text-align: right; flex-shrink: 0; }
+.adm-empty { padding: 30px; text-align: center; color: var(--muted); font-weight: 700; }
+.adm-code-pill { font-family: ui-monospace, Consolas, monospace; font-size: .8rem; background: var(--bg-2); padding: 2px 8px; border-radius: 6px; color: var(--ink-soft); }
+.adm-pill { display: inline-block; font-size: .75rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--bg-2); color: var(--ink-soft); }
+.adm-nsfw { background: #ffdde4; color: #c0234a; }
+.st-new { background: var(--pink-soft); color: var(--pink-deep); }
+.st-accepted { background: color-mix(in srgb, var(--star) 30%, transparent); color: #8a6200; }
+.st-paid, .st-in_progress { background: color-mix(in srgb, var(--peri) 22%, transparent); color: var(--peri-deep); }
+.st-done { background: color-mix(in srgb, var(--mint) 25%, transparent); color: #1e8a5c; }
+.st-declined, .st-cancelled { opacity: .7; }
+
+.adm-drawer-bg { position: fixed; inset: 0; background: rgba(20, 10, 40, .5); z-index: 80; }
+.adm-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(620px, 100%); z-index: 90; border-radius: 22px 0 0 22px; overflow-y: auto; padding: 24px; display: grid; align-content: start; gap: 14px; }
+.adm-drawer[hidden], .adm-drawer-bg[hidden] { display: none; }
+.adm-drawer-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.adm-drawer-head h2 { font-size: 1.4rem; margin: 0; }
+.adm-field { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: .95rem; }
+.adm-field > span { color: var(--muted); font-weight: 800; font-size: .85rem; }
+.adm-field a { word-break: break-all; }
+@media (max-width: 520px) { .adm-field { grid-template-columns: 1fr; gap: 2px; } }
+.adm-pre { white-space: pre-wrap; margin: 0; font-size: .85rem; background: var(--bg-2); padding: 10px; border-radius: 10px; font-family: ui-monospace, Consolas, monospace; }
+.adm-edit h3 { margin: 6px 0 10px; }
+.adm-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.adm-span { grid-column: 1 / -1; }
+@media (max-width: 520px) { .adm-edit-grid { grid-template-columns: 1fr; } }
+.adm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.adm-danger { color: #e23b62; border-color: #ffc2cf; }
+.adm-confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; padding: 12px; border-radius: 12px; background: #ffe5ea; color: #a01a3c; font-weight: 700; }
+.adm-confirm[hidden] { display: none; }

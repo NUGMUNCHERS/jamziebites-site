@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>JamzieBites · Furry Art Commissions</title>
   <meta name="description" content="Soft, sparkly furry art commissions by Jamzie — chibis, stickers, reference sheets, full renders and cinematic illustrations. Hand-drawn, never AI.">
@@ -517,12 +517,12 @@
             <div class="form-grid">
               <div class="field">
                 <label for="f-name">Your name / username <span class="req">*</span></label>
-                <input class="input" id="f-name" name="name" autocomplete="nickname" required>
+                <input class="input" id="f-name" name="name" autocomplete="nickname" maxlength="80" required>
                 <span class="err">What should I call you?</span>
               </div>
               <div class="field">
                 <label for="f-contact">Where can I reach you? <span class="req">*</span></label>
-                <input class="input" id="f-contact" name="contact" placeholder="Discord @ or email" required>
+                <input class="input" id="f-contact" name="contact" placeholder="Discord @ or email" maxlength="200" required>
                 <span class="err">I need a way to reply to you!</span>
               </div>
               <div class="field">
@@ -545,17 +545,17 @@
               </div>
               <div class="field">
                 <label for="f-char">Character name(s)</label>
-                <input class="input" id="f-char" name="character" placeholder="e.g. Berry, the space dragon">
+                <input class="input" id="f-char" name="character" maxlength="200" placeholder="e.g. Berry, the space dragon">
               </div>
               <div class="field full">
                 <label for="f-refs">Character ref sheet link(s) <span class="req">*</span></label>
-                <textarea class="input" id="f-refs" name="references" style="min-height:80px" placeholder="Link to your character's ref sheet (Toyhouse, Google Drive, imgur…) plus any extra refs, one per line" required></textarea>
+                <textarea class="input" id="f-refs" name="references" maxlength="3000" style="min-height:80px" placeholder="Link to your character's ref sheet (Toyhouse, Google Drive, imgur…) plus any extra refs, one per line" required></textarea>
                 <span class="help">A character ref sheet is <strong>required</strong> for all commissions. No ref sheet yet? Choose <em>Custom Design Ref Sheet</em> above and I'll design your character first!</span>
                 <span class="err">Please add your ref sheet link — or choose “Custom Design Ref Sheet” and write “new design” here.</span>
               </div>
               <div class="field full">
                 <label for="f-desc">Describe your idea <span class="req">*</span></label>
-                <textarea class="input" id="f-desc" name="description" placeholder="Pose, expression, outfit, background, mood, colors… the more the better!" required></textarea>
+                <textarea class="input" id="f-desc" name="description" maxlength="6000" placeholder="Pose, expression, outfit, background, mood, colors… the more the better!" required></textarea>
                 <span class="err">Tell me a little about what you'd like!</span>
               </div>
               <div class="field">

@@ -266,46 +266,75 @@
      Homepage-only features below
      ====================================================================== */
 
-  /* ---------- Status & slots ---------- */
-  var slots = C.slots || { total: 0, taken: 0 };
-  var left = Math.max(0, (slots.total || 0) - (slots.taken || 0));
-  var status = C.status || "open";
-  if (status === "open" && slots.total && left === 0) status = "waitlist";
+  /* ---------- Status, slots & queue ----------
+     Rendered from config.js first, then refreshed live from the database
+     (her admin studio controls it). Falls back silently if offline. */
+  var STAGES = ["waiting", "sketch", "lineart", "color", "render", "done"];
+  var STAGE_LABEL = { waiting: "In line", sketch: "Sketch", lineart: "Lineart", color: "Color", render: "Rendering", done: "Done ♡" };
+  var status = "open";
+  var leadDefault = $("#request-lead") ? $("#request-lead").textContent : "";
+  function renderStatus(st) {
+    var total = Math.max(0, parseInt(st.slots_total, 10) || 0);
+    var taken = Math.max(0, parseInt(st.slots_taken, 10) || 0);
+    var left = Math.max(0, total - taken);
+    status = /^(open|waitlist|closed)$/.test(st.status) ? st.status : "open";
+    if (status === "open" && total && left === 0) status = "waitlist";
 
-  var pill = $("#status-pill");
-  if (pill) {
-    pill.setAttribute("data-status", status);
-    $("#status-text").textContent = status === "open" ? "Commissions open" : status === "waitlist" ? "Waitlist open" : "Commissions closed";
-    $("#status-slots").textContent = status === "open" && slots.total ? "· " + left + " of " + slots.total + " slots left" : status === "closed" ? "· check back soon" : "· slots are full";
+    var pill = $("#status-pill");
+    if (pill) {
+      pill.setAttribute("data-status", status);
+      $("#status-text").textContent = status === "open" ? "Commissions open" : status === "waitlist" ? "Waitlist open" : "Commissions closed";
+      $("#status-slots").textContent = status === "open" && total ? "· " + left + " of " + total + " slots left" : status === "closed" ? "· check back soon" : "· slots are full";
+    }
+    if ($("#slots-big")) {
+      $("#slots-big").textContent = status === "closed" ? "Commissions are closed" : status === "waitlist" ? "All slots are full ♡" : left + " of " + total + " slots open";
+      $("#slots-small").textContent = status === "closed" ? "Follow my socials to hear when they reopen!" : status === "waitlist" ? "You can still send a request to join the waitlist." : "Grab one while they last!";
+      var dots = "";
+      for (var d = 0; d < Math.min(total, 30); d++) dots += "<i" + (d < taken ? ' class="taken"' : "") + "></i>";
+      $("#slot-dots").innerHTML = dots;
+    }
+    var qList = $("#queue-list");
+    if (qList) {
+      var q = Array.isArray(st.queue) ? st.queue : [];
+      if (!q.length) {
+        qList.innerHTML = '<li class="card q-empty"><span class="big-emoji" aria-hidden="true">🍓</span><b style="font-family:var(--font-display);font-size:1.2rem">The queue is empty!</b><p style="color:var(--ink-soft);margin:6px 0 16px">Which means your piece could start soon.</p><a class="btn btn-primary btn-sm" href="#request">Be the first ✦</a></li>';
+      } else {
+        qList.innerHTML = q.map(function (item, i) {
+          var idx = Math.max(0, STAGES.indexOf(item.stage));
+          var bars = "";
+          for (var b = 1; b < STAGES.length; b++) bars += "<i" + (b <= idx ? ' class="on"' : "") + "></i>";
+          return '<li class="card q-item"><span class="q-num">' + (i + 1) + "</span><div><b>" + esc(item.client || "Anonymous") + "</b><small>" + esc(item.type || "") + '</small></div><span class="q-stage' + (item.stage === "done" ? " done" : "") + '">' + esc(STAGE_LABEL[item.stage] || item.stage) + '</span><div class="q-progress" aria-label="Progress: ' + esc(STAGE_LABEL[item.stage] || "") + '">' + bars + "</div></li>";
+        }).join("") + '<li class="q-legend" aria-hidden="true"><span>Sketch</span><span>Lineart</span><span>Color</span><span>Render</span><span>Done</span></li>';
+      }
+    }
+    if ($("#f-submit") && !$("#f-submit").disabled) $("#f-submit").textContent = status === "open" ? "Send my request ✦" : "Join the waitlist ✦";
+    if ($("#request-lead")) {
+      $("#request-lead").textContent = status === "closed"
+        ? "Commissions are closed right now, but you can still send a request to join the waitlist — I'll reach out when a slot opens!"
+        : status === "waitlist" ? "All slots are taken right now — send your request and I'll add you to the waitlist!" : leadDefault;
+    }
   }
+  renderStatus({ status: C.status, slots_total: (C.slots || {}).total, slots_taken: (C.slots || {}).taken, queue: C.queue || [] });
   $$(".js-turnaround").forEach(function (el) { el.textContent = C.turnaround || "2–12 weeks"; });
   if ($("#stat-turnaround") && C.turnaround) $("#stat-turnaround").textContent = C.turnaround.replace(" weeks", " wks");
 
-  var slotsBig = $("#slots-big");
-  if (slotsBig) {
-    slotsBig.textContent = status === "closed" ? "Commissions are closed" : status === "waitlist" ? "All slots are full ♡" : left + " of " + slots.total + " slots open";
-    $("#slots-small").textContent = status === "closed" ? "Follow my socials to hear when they reopen!" : status === "waitlist" ? "You can still send a request to join the waitlist." : "Grab one while they last!";
-    var dots = "";
-    for (var d = 0; d < (slots.total || 0); d++) dots += "<i" + (d < slots.taken ? ' class="taken"' : "") + "></i>";
-    $("#slot-dots").innerHTML = dots;
+  /* ---------- Database (public functions only) ---------- */
+  var BK = C.backend || {};
+  function backendOk() { return /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(BK.url || "") && /^sb_publishable_[A-Za-z0-9_-]+$/.test(BK.key || ""); }
+  function rpc(name, body) {
+    return fetch(BK.url + "/rest/v1/rpc/" + name, {
+      method: "POST",
+      headers: { apikey: BK.key, "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    }).then(function (r) {
+      return r.json().catch(function () { return null; }).then(function (j) {
+        if (!r.ok) throw new Error((j && j.message) || "Something went wrong");
+        return j;
+      });
+    });
   }
-
-  /* ---------- Queue ---------- */
-  var STAGES = ["waiting", "sketch", "lineart", "color", "render", "done"];
-  var STAGE_LABEL = { waiting: "In line", sketch: "Sketch", lineart: "Lineart", color: "Color", render: "Rendering", done: "Done ♡" };
-  var qList = $("#queue-list");
-  if (qList) {
-    var q = C.queue || [];
-    if (!q.length) {
-      qList.innerHTML = '<li class="card q-empty"><span class="big-emoji" aria-hidden="true">🍓</span><b style="font-family:var(--font-display);font-size:1.2rem">The queue is empty!</b><p style="color:var(--ink-soft);margin:6px 0 16px">Which means your piece could start soon.</p><a class="btn btn-primary btn-sm" href="#request">Be the first ✦</a></li>';
-    } else {
-      qList.innerHTML = q.map(function (item, i) {
-        var idx = Math.max(0, STAGES.indexOf(item.stage));
-        var bars = "";
-        for (var b = 1; b < STAGES.length; b++) bars += "<i" + (b <= idx ? ' class="on"' : "") + "></i>";
-        return '<li class="card q-item"><span class="q-num">' + (i + 1) + "</span><div><b>" + esc(item.client || "Anonymous") + "</b><small>" + esc(item.type || "") + '</small></div><span class="q-stage' + (item.stage === "done" ? " done" : "") + '">' + esc(STAGE_LABEL[item.stage] || item.stage) + '</span><div class="q-progress" aria-label="Progress: ' + esc(STAGE_LABEL[item.stage] || "") + '">' + bars + "</div></li>";
-      }).join("") + '<li class="q-legend" aria-hidden="true"><span>Sketch</span><span>Lineart</span><span>Color</span><span>Render</span><span>Done</span></li>';
-    }
+  if (backendOk() && ($("#status-pill") || $("#queue-list"))) {
+    rpc("public_status").then(function (st) { if (st && st.status) renderStatus(st); }).catch(function () {});
   }
 
   /* ---------- About & lists ---------- */
@@ -637,12 +666,6 @@
   if (form) {
     var contact = C.contact || {};
     if (contact.email && !/^[^@\s"'<>?&]+@[^@\s"'<>?&]+\.[a-z]{2,}$/i.test(contact.email)) contact = Object.assign({}, contact, { email: "" });
-    if (status !== "open") {
-      $("#f-submit").textContent = "Join the waitlist ✦";
-      $("#request-lead").textContent = status === "closed"
-        ? "Commissions are closed right now, but you can still send a request to join the waitlist — I'll reach out when a slot opens!"
-        : "All slots are taken right now — send your request and I'll add you to the waitlist!";
-    }
 
     var cl = "";
     if (contact.discord) cl += '<div class="contact-line">' + icon("discord") + "<span>Discord: <strong>" + esc(contact.discord) + "</strong></span></div>";
@@ -763,7 +786,30 @@
       var btn = $("#f-submit");
 
       var endpoint = /^https:\/\/formspree\.io\/f\/[A-Za-z0-9]+$/.test(contact.formEndpoint || "") ? contact.formEndpoint : "";
-      if (endpoint) {
+      var resetBtn = function () { btn.disabled = false; btn.textContent = status === "open" ? "Send my request ✦" : "Join the waitlist ✦"; };
+      if (backendOk()) {
+        var val = function (id) { return ($(id).value || "").trim(); };
+        btn.disabled = true; btn.textContent = "Sending…";
+        rpc("submit_request", {
+          p_name: val("#f-name"), p_contact: val("#f-contact"), p_type: val("#f-type"),
+          p_character: val("#f-char"), p_refs: val("#f-refs"), p_description: val("#f-desc"),
+          p_deadline: val("#f-deadline") || null, p_privacy: val("#f-privacy"),
+          p_nsfw: mature.checked, p_adult: $("#f-adult").checked,
+          p_quote: attachedQuote ? attachedQuote.full : ""
+        }).then(function (code) {
+          code = String(code || "");
+          store(DRAFT_KEY, null);
+          form.reset(); attachedQuote = null; applyQuote(); syncMature();
+          openModal("Request sent! ♡",
+            "<p>Thank you so much! Jamzie will look over your request and reply at the contact you gave.</p>" +
+            '<p>Your request code is <strong class="req-code">' + esc(code) + "</strong>. Save it — you'll need it if your commission is accepted and you pay.</p>" +
+            "<p><strong>Please don't send any payment until your commission is accepted.</strong></p>" +
+            '<div class="modal-actions"><button class="btn btn-primary" type="button" id="m-copy-code">Copy my code</button></div>');
+          $("#m-copy-code").addEventListener("click", function () { copy(code, "Code copied ✓"); });
+        }).catch(function (err) {
+          showCopyModal(msg, "The request couldn't be sent (" + (err && err.message ? err.message : "network error") + "). Here it is so nothing is lost — you can send it to Jamzie directly.");
+        }).then(resetBtn);
+      } else if (endpoint) {
         btn.disabled = true; btn.textContent = "Sending…";
         fetch(endpoint, {
           method: "POST",
@@ -781,10 +827,7 @@
           $$("#modal-body a").forEach(function (a) { a.addEventListener("click", closeModal); });
         }).catch(function () {
           showCopyModal(msg, "Hmm, the form couldn't send right now — but here's your request so nothing is lost!");
-        }).then(function () {
-          btn.disabled = false;
-          btn.textContent = status === "open" ? "Send my request ✦" : "Join the waitlist ✦";
-        });
+        }).then(resetBtn);
       } else {
         showCopyModal(msg);
       }
