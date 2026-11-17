@@ -36,7 +36,7 @@ window.JAMZIE = {
        "test mode — no real money" banner. Swap in the LIVE link once her Stripe
        account is activated (see README). All commissions, SFW and NSFW, use it. */
   payments: {
-    stripeLink: "https://buy.stripe.com/test_bJe7sL8EB4BG4Xc5hHaIM00"
+    stripeLink: "https://buy.stripe.com/bJeaEX7wH7q95LBdoMfMA00"
   },
 
   /* ---------- Social links (blank url = hidden) ---------- */
