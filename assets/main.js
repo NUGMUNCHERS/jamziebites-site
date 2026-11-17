@@ -18,6 +18,13 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  // Only allow https:// links (or site-relative paths when allowRelative) — blocks javascript:, data:, etc.
+  function safeUrl(u, allowRelative) {
+    u = String(u || "").trim();
+    if (allowRelative && /^[A-Za-z0-9_\-./]+$/.test(u) && u.indexOf("..") === -1) return u;
+    try { var p = new URL(u); return p.protocol === "https:" ? p.href : ""; } catch (e) { return ""; }
+  }
+  function num(n) { n = parseInt(n, 10); return isFinite(n) && n > 0 ? n : ""; }
   function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
   function range(min, max) { return Math.round(min) === Math.round(max) ? money(min) : money(min) + "–" + money(max); }
   function store(key, val) {
@@ -138,7 +145,8 @@
   if (socialsEl) {
     var html = "";
     (C.socials || []).forEach(function (s) {
-      if (s.url) html += '<a href="' + esc(s.url) + '" target="_blank" rel="noopener me" aria-label="' + esc(s.label) + '" title="' + esc(s.label) + '">' + icon(s.icon) + "</a>";
+      var su = safeUrl(s.url);
+      if (su) html += '<a href="' + esc(su) + '" target="_blank" rel="noopener me" aria-label="' + esc(s.label) + '" title="' + esc(s.label) + '">' + icon(s.icon) + "</a>";
     });
     if (C.contact && C.contact.email) html += '<a href="mailto:' + esc(C.contact.email) + '" aria-label="Email" title="Email">' + icon("mail") + "</a>";
     socialsEl.innerHTML = html;
@@ -315,7 +323,7 @@
   if (grid) {
     grid.innerHTML = art.map(function (a, i) {
       return '<button type="button" class="gallery-item" data-cat="' + esc(a.category) + '" data-i="' + i + '" aria-label="View ' + esc(a.title) + ' larger">' +
-        '<img src="' + esc(a.src) + '" width="' + (a.w || "") + '" height="' + (a.h || "") + '" alt="' + esc(a.alt || a.title) + '" loading="lazy" decoding="async">' +
+        '<img src="' + esc(safeUrl(a.src, true)) + '" width="' + num(a.w) + '" height="' + num(a.h) + '" alt="' + esc(a.alt || a.title) + '" loading="lazy" decoding="async">' +
         '<span class="meta"><strong>' + esc(a.title) + "</strong><span>" + esc(a.tier || CAT[a.category] || "") + "</span></span></button>";
     }).join("");
 
@@ -340,7 +348,7 @@
     var show = function (i) {
       var a = art[i]; if (!a) return;
       cur = i;
-      lbImg.src = a.src; lbImg.alt = a.alt || a.title;
+      lbImg.src = safeUrl(a.src, true); lbImg.alt = a.alt || a.title;
       $("#lb-title").textContent = a.title;
       $("#lb-tier").textContent = (a.tier || "") + "  ·  © JamzieBites";
     };
@@ -628,6 +636,7 @@
   }
   if (form) {
     var contact = C.contact || {};
+    if (contact.email && !/^[^@\s"'<>?&]+@[^@\s"'<>?&]+\.[a-z]{2,}$/i.test(contact.email)) contact = Object.assign({}, contact, { email: "" });
     if (status !== "open") {
       $("#f-submit").textContent = "Join the waitlist ✦";
       $("#request-lead").textContent = status === "closed"
@@ -753,9 +762,10 @@
       var msg = buildMessage();
       var btn = $("#f-submit");
 
-      if (contact.formEndpoint) {
+      var endpoint = /^https:\/\/formspree\.io\/f\/[A-Za-z0-9]+$/.test(contact.formEndpoint || "") ? contact.formEndpoint : "";
+      if (endpoint) {
         btn.disabled = true; btn.textContent = "Sending…";
-        fetch(contact.formEndpoint, {
+        fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
