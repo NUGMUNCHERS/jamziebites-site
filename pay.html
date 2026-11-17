@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Pay for Your Commission · JamzieBites</title>
   <meta name="description" content="Pay for an accepted JamzieBites commission securely with Stripe — cards, Apple Pay and Google Pay.">
   <meta name="robots" content="noindex, noai, noimageai">
@@ -10,18 +12,9 @@
   <link rel="canonical" href="https://jamziebites.com/pay.html">
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="manifest" href="site.webmanifest">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Gochi+Hand&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
   <link rel="stylesheet" href="assets/styles.css">
-  <script>
-    (function () {
-      var t = null;
-      try { t = localStorage.getItem("jb-theme"); } catch (e) {}
-      if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", t);
-    })();
-  </script>
+  <script src="assets/theme-init.js"></script>
   <script src="config.js"></script>
 </head>
 <body>
@@ -107,11 +100,6 @@
             <p class="pay-fine" id="pay-unavailable" hidden style="color:#e23b62">Online payment isn't set up yet — Jamzie will send you payment details directly.</p>
           </form>
         </div>
-
-        <div class="card nsfw-note" id="nsfw-note">
-          <b>🔞 Paying for an NSFW commission?</b>
-          <span id="nsfw-text">Please don't use the button above — card processors don't allow adult content. Jamzie will send you separate payment instructions when your NSFW commission is accepted.</span>
-        </div>
       </div>
     </section>
   </main>
@@ -131,51 +119,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="assets/main.js"></script>
-  <script>
-    (function () {
-      var cfg = (window.JAMZIE && window.JAMZIE.payments) || {};
-      var link = cfg.stripeLink || "";
-      var params = new URLSearchParams(location.search);
-
-      if (params.get("paid") === "1") {
-        document.getElementById("pay-thanks").hidden = false;
-        document.getElementById("pay-main").hidden = true;
-        document.getElementById("nsfw-note").hidden = true;
-        return;
-      }
-      if (/\/test_/.test(link)) document.getElementById("test-banner").hidden = false;
-      if (!link) {
-        document.getElementById("p-go").disabled = true;
-        document.getElementById("pay-unavailable").hidden = false;
-      }
-      if (cfg.nsfwPayLink) {
-        document.getElementById("nsfw-text").innerHTML = 'Please don\'t use the button above — card processors don\'t allow adult content. Pay for NSFW commissions here instead: <a href="' + encodeURI(cfg.nsfwPayLink) + '" target="_blank" rel="noopener">NSFW payment link</a>.';
-      }
-
-      var form = document.getElementById("pay-form");
-      form.addEventListener("input", function (e) {
-        var f = e.target.closest(".field"); if (f) f.classList.remove("invalid");
-        var c = e.target.closest(".check"); if (c) c.classList.remove("invalid");
-      });
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        if (!link) return;
-        var bad = null;
-        var user = document.getElementById("p-user");
-        if (!user.value.trim()) { user.closest(".field").classList.add("invalid"); bad = bad || user; }
-        ["p-accepted", "p-tos"].forEach(function (id) {
-          var cb = document.getElementById(id);
-          if (!cb.checked) { cb.closest(".check").classList.add("invalid"); bad = bad || cb; }
-        });
-        if (bad) { bad.focus(); return; }
-
-        // Tag the payment with the client's username so Jamzie can match it up.
-        var ref = user.value.trim().replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 190) || "client";
-        var url = new URL(link);
-        url.searchParams.set("client_reference_id", ref);
-        location.href = url.toString();
-      });
-    })();
-  </script>
+  <script src="assets/pay.js"></script>
 </body>
 </html>

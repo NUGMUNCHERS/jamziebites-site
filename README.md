@@ -62,7 +62,29 @@ The **Pay** page sends clients to a Stripe Payment Link. They type in the exact 
    - Or ask Claude to set it up again.
 3. Paste the new `https://buy.stripe.com/...` link into `payments.stripeLink` in `config.js`. The "test mode" banner on the Pay page disappears automatically once the link no longer contains `/test_`.
 
-**NSFW payments:** Stripe (and PayPal) don't allow sexually explicit content, and accounts that take payment for it can be frozen with the money held. Don't send NSFW clients to the Stripe link. Put an adult-friendly payment link in `payments.nsfwPayLink` (VGen is one option), or leave it blank and send NSFW clients payment details yourself.
+**NSFW payments** go through the same Stripe link as everything else, by choice. Be aware that Stripe's rules ban sexually explicit content, and Stripe can close accounts that take payment for it and hold the balance. Withdraw your Stripe balance to your bank regularly (automatic payouts are the default) so as little money as possible sits in Stripe at any time.
+
+## Security
+
+What's already in place:
+
+- **HTTPS everywhere.** "Enforce HTTPS" is on in GitHub Pages once the certificate is issued.
+- **Strict Content-Security-Policy on every page.** Only the site's own scripts, styles, fonts and images can load, which blocks injected scripts.
+- **Safe outside connections.** The only outside service the site talks to is Formspree, and only if you set it up. Payments happen on Stripe's own checkout page, and the site never sees card details.
+- **No inline scripts.** All JavaScript lives in `assets/`.
+- **Locked payment button.** The Pay button only ever sends people to `https://buy.stripe.com`, even if `config.js` were edited to point somewhere else.
+- **No framing.** The site can't be embedded in someone else's page (clickjacking protection).
+- **Privacy.** Fonts are self-hosted, so visitors' browsers never contact Google. The referrer policy limits what other sites learn about your visitors.
+- **Spam protection.** The request form has a hidden honeypot field plus a "too fast to be human" check.
+- **Email spoofing protection.** The DNS email-security records (SPF `-all`, DMARC `reject`) stop anyone sending email pretending to be @jamziebites.com.
+- **AI scraper blocking.** `robots.txt` and `ai.txt` turn away AI scrapers.
+- **No secrets in the repo.** No API keys or passwords live here. Never paste a Stripe secret key (`sk_live_…`) into any file.
+
+What only the account owners can do (please do these!):
+
+1. **Turn on 2-factor authentication** for GitHub, Squarespace, Stripe and the email account behind them. Whoever controls these controls the site, the domain and the money.
+2. **Keep the domain locked.** In Squarespace → Domains → jamziebites.com, make sure **domain lock / transfer lock** is on and auto-renew is enabled. An expired domain can be bought by someone else.
+3. **Use strong, unique passwords** (a password manager helps).
 
 ## Putting it online (free)
 

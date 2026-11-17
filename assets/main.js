@@ -115,6 +115,11 @@
   var yearEl = $("#year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  /* ---------- ToS page bits ---------- */
+  var tosUpd = $("#tos-updated");
+  if (tosUpd && C.tosUpdated) { tosUpd.textContent = "Last updated: " + C.tosUpdated; tosUpd.hidden = false; }
+  $$("[data-print]").forEach(function (b) { b.addEventListener("click", function () { window.print(); }); });
+
   var ICONS = {
     x: '<path d="M4 4l16 16M20 4 4 20" stroke-width="2.6"/>',
     bluesky: '<path d="M12 11c-1.5-3-5-6.5-7-6.5-1.5 0-1.5 2-1 4 .6 2.5 2.5 3.4 5 3-3 .8-4 2.6-2 4.5 2.5 2.4 4-1 5-3 1 2 2.5 5.4 5 3 2-1.9 1-3.7-2-4.5 2.5.4 4.4-.5 5-3 .5-2 .5-4-1-4-2 0-5.5 3.5-7 6.5z" fill="currentColor" stroke="none"/>',
@@ -450,6 +455,7 @@
   var calc = $("#calc");
   var attachedQuote = null;
   if (calc) {
+    calc.addEventListener("submit", function (e) { e.preventDefault(); });
     var seg = function (el, name, list, sub, checkedIdx) {
       el.innerHTML = list.map(function (x, i) {
         return '<label><input type="radio" name="' + name + '" value="' + esc(x.id) + '"' + (i === checkedIdx ? " checked" : "") + "><span>" + esc(x.label) + (sub ? " <em>" + sub(x) + "</em>" : "") + "</span></label>";
@@ -614,7 +620,7 @@
     if (!form) return;
     var data = {};
     $$("input, select, textarea", form).forEach(function (el) {
-      if (!el.id || el.type === "checkbox") return; // agreements must be ticked fresh each time
+      if (!el.id || el.type === "checkbox" || el.id === "f-website") return; // agreements must be ticked fresh each time
       data[el.id] = el.type === "checkbox" ? el.checked : el.value;
     });
     data.quote = attachedQuote;
@@ -726,8 +732,15 @@
       if ($("#m-copy-dc")) $("#m-copy-dc").addEventListener("click", function () { copy(contact.discord, "Discord username copied!"); });
     };
 
+    var formOpenedAt = Date.now();
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      // Spam guard: bots fill the hidden field or submit instantly. Pretend it worked, send nothing.
+      var hp = $("#f-website");
+      if ((hp && hp.value) || Date.now() - formOpenedAt < 4000) {
+        openModal("Request sent! ♡", "<p>Thank you!</p>");
+        return;
+      }
       var firstBad = null;
       $$("[required]", form).forEach(function (el) {
         var bad = el.type === "checkbox" ? !el.checked : !el.value.trim();
@@ -748,7 +761,7 @@
           body: JSON.stringify({
             _subject: "Commission request — " + $("#f-name").value,
             name: $("#f-name").value, contact: $("#f-contact").value, type: $("#f-type").value,
-            message: msg
+            message: msg, _gotcha: ""
           })
         }).then(function (r) {
           if (!r.ok) throw new Error("bad status");

@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>JamzieBites · Furry Art Commissions</title>
   <meta name="description" content="Soft, sparkly furry art commissions by Jamzie — chibis, stickers, reference sheets, full renders and cinematic illustrations. Hand-drawn, never AI.">
   <meta name="robots" content="index, follow, noai, noimageai">
@@ -24,20 +26,11 @@
   <link rel="apple-touch-icon" href="assets/logo.svg">
   <link rel="manifest" href="site.webmanifest">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Gochi+Hand&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
   <link rel="stylesheet" href="assets/styles.css">
 
   <!-- Pick the theme before paint so there's no flash -->
-  <script>
-    (function () {
-      var t = null;
-      try { t = localStorage.getItem("jb-theme"); } catch (e) {}
-      if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", t);
-    })();
-  </script>
+  <script src="assets/theme-init.js"></script>
   <script src="config.js"></script>
 </head>
 <body>
@@ -240,7 +233,7 @@
         </div>
 
         <div class="calc">
-          <form class="card calc-form" id="calc" onsubmit="return false" aria-label="Commission quote calculator">
+          <form class="card calc-form" id="calc" aria-label="Commission quote calculator">
             <fieldset class="field-group">
               <legend>1. What kind of commission?</legend>
               <div class="seg" id="calc-type">
@@ -469,7 +462,7 @@
         </div>
         <div class="faq" id="faq-list">
           <details class="card"><summary>Are commissions open right now?</summary><div class="answer"><p>Check the badge at the very top of the page — it always shows whether commissions are open, waitlist-only, or closed, plus how many slots are left this round.</p></div></details>
-          <details class="card"><summary>How do I pay?</summary><div class="answer"><p>Once your commission is <strong>accepted</strong> and I've confirmed your final price, pay it on the <a href="pay.html">Pay page</a> by card, Apple Pay or Google Pay (processed securely by Stripe). NSFW commissions are paid separately; I'll send you details. Full payment (100%) is required up front before any artwork is started — deposits, partial payments and payment plans aren't accepted. Your slot is secured once payment arrives.</p><p><strong>Please don't send payment until your commission has been accepted.</strong></p></div></details>
+          <details class="card"><summary>How do I pay?</summary><div class="answer"><p>Once your commission is <strong>accepted</strong> and I've confirmed your final price, pay it on the <a href="pay.html">Pay page</a> by card, Apple Pay or Google Pay (processed securely by Stripe). Full payment (100%) is required up front before any artwork is started — deposits, partial payments and payment plans aren't accepted. Your slot is secured once payment arrives.</p><p><strong>Please don't send payment until your commission has been accepted.</strong></p></div></details>
           <details class="card"><summary>How long will it take?</summary><div class="answer"><p>Usually 2–12 weeks depending on complexity, workload and life. Larger projects can take longer. Deadlines aren't guaranteed unless we agree on one in writing. Need it sooner? Rush commissions are +35% when I have room.</p></div></details>
           <details class="card"><summary>How many revisions do I get?</summary><div class="answer"><p>Two minor revisions are included during the sketch stage. Additional revisions or major changes after sketch approval may cost $10–$50+, and a complete character change may count as a new commission. If <em>I</em> make a mistake, I'll fix it for free!</p></div></details>
           <details class="card"><summary>Do you draw mature / NSFW content?</summary><div class="answer"><p>Yes! NSFW is a flat <strong>+$95</strong> on top of the commission price. It must be discussed with me beforehand, and <strong>clients and all characters involved must be 18+</strong>. I may decline any subject matter I'm not comfortable with.</p></div></details>
@@ -512,6 +505,11 @@
           </aside>
 
           <form class="card request-form reveal" id="request-form" novalidate>
+            <!-- Spam trap: hidden from people, bots fill it in -->
+            <div class="hp-field" aria-hidden="true">
+              <label for="f-website">Leave this empty</label>
+              <input id="f-website" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
+            </div>
             <div class="prefill-note" id="prefill-note">
               <span>✦ Quote attached: <span id="prefill-text"></span></span>
               <button type="button" class="btn btn-sm btn-ghost" id="prefill-clear">Remove</button>
