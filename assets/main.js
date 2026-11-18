@@ -157,7 +157,7 @@
   document.addEventListener("contextmenu", function (e) {
     if (e.target.tagName === "IMG" && e.target.closest(".protect")) {
       e.preventDefault();
-      toast("♡ Art © JamzieBites — please credit, don't edit, and never feed it to AI!");
+      toast("♡ Art © JamzieBites. Please credit, don't edit, and never feed it to AI!");
     }
   });
   document.addEventListener("dragstart", function (e) {
@@ -166,11 +166,12 @@
 
   /* ---------- Sparkle cursor trail ---------- */
   if (!reduceMotion && window.matchMedia && matchMedia("(pointer: fine)").matches) {
-    var last = 0, glyphs = ["✦", "♡", "✧", "⋆"], colors = ["#ff8fc4", "#b892ff", "#8c8ff2", "#ffcf4d", "#9ad8ff"];
+    var last = 0, alive = 0, glyphs = ["✦", "♡", "✧", "⋆"], colors = ["#ff8fc4", "#b892ff", "#8c8ff2", "#ffcf4d", "#9ad8ff"];
     document.addEventListener("pointermove", function (e) {
       var now = performance.now();
-      if (now - last < 70) return;
+      if (now - last < 70 || alive >= 24) return;
       last = now;
+      alive++;
       var s = document.createElement("span");
       s.className = "sparkle";
       s.textContent = glyphs[(Math.random() * glyphs.length) | 0];
@@ -182,21 +183,22 @@
       s.style.setProperty("--dy", (Math.random() * 24 + 10) + "px");
       s.setAttribute("aria-hidden", "true");
       document.body.appendChild(s);
-      s.addEventListener("animationend", function () { s.remove(); });
+      s.addEventListener("animationend", function () { s.remove(); alive--; });
     }, { passive: true });
   }
 
   /* ---------- Night sky / daydream canvas ---------- */
   var sky = $("#sky");
   if (sky && sky.getContext) {
-    var ctx = sky.getContext("2d"), stars = [], W = 0, H = 0, raf = 0, visible = true, shooting = null;
+    var ctx = sky.getContext("2d"), stars = [], W = 0, H = 0, raf = 0, visible = true, shooting = null, lastDraw = -1e9;
+    var FRAME_MS = 1000 / 30; // the stars twinkle slowly, so 30fps looks identical and halves (or more) the work
     var isDark = function () { return document.documentElement.getAttribute("data-theme") === "dark"; };
     var sizeSky = function () {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = sky.clientWidth; H = sky.clientHeight;
       sky.width = W * dpr; sky.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.round((W * H) / 5200);
+      var n = Math.min(Math.round((W * H) / 5200), 320);
       stars = [];
       for (var i = 0; i < n; i++) {
         stars.push({
@@ -217,6 +219,8 @@
       ctx.fill();
     };
     var draw = function (t) {
+      if (t && t - lastDraw < FRAME_MS - 2) { if (!reduceMotion && visible) raf = requestAnimationFrame(draw); return; }
+      lastDraw = t || 0;
       ctx.clearRect(0, 0, W, H);
       var dark = isDark();
       for (var i = 0; i < stars.length; i++) {
@@ -234,14 +238,14 @@
         }
       }
       if (dark && !reduceMotion) {
-        if (!shooting && Math.random() < 0.004) shooting = { x: Math.random() * W * 0.7 + W * 0.2, y: Math.random() * H * 0.3, life: 1 };
+        if (!shooting && Math.random() < 0.008) shooting = { x: Math.random() * W * 0.7 + W * 0.2, y: Math.random() * H * 0.3, life: 1 };
         if (shooting) {
           ctx.globalAlpha = shooting.life;
           var g = ctx.createLinearGradient(shooting.x, shooting.y, shooting.x + 90, shooting.y - 40);
           g.addColorStop(0, "#fff"); g.addColorStop(1, "rgba(255,255,255,0)");
           ctx.strokeStyle = g; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.moveTo(shooting.x, shooting.y); ctx.lineTo(shooting.x + 90, shooting.y - 40); ctx.stroke();
-          shooting.x -= 9; shooting.y += 4; shooting.life -= 0.025;
+          shooting.x -= 18; shooting.y += 8; shooting.life -= 0.05;
           if (shooting.life <= 0) shooting = null;
         }
       }
@@ -288,7 +292,7 @@
     }
     if ($("#slots-big")) {
       $("#slots-big").textContent = status === "closed" ? "Commissions are closed" : status === "waitlist" ? "All slots are full ♡" : left + " of " + total + " slots open";
-      $("#slots-small").textContent = status === "closed" ? "Follow my socials to hear when they reopen!" : status === "waitlist" ? "You can still send a request to join the waitlist." : "Grab one while they last!";
+      $("#slots-small").textContent = status === "closed" ? "Follow my socials to hear when they reopen!" : status === "waitlist" ? "You can still send a request to join the waitlist." : "Send a request to grab one!";
       var dots = "";
       for (var d = 0; d < Math.min(total, 30); d++) dots += "<i" + (d < taken ? ' class="taken"' : "") + "></i>";
       $("#slot-dots").innerHTML = dots;
@@ -310,8 +314,8 @@
     if ($("#f-submit") && !$("#f-submit").disabled) $("#f-submit").textContent = status === "open" ? "Send my request ✦" : "Join the waitlist ✦";
     if ($("#request-lead")) {
       $("#request-lead").textContent = status === "closed"
-        ? "Commissions are closed right now, but you can still send a request to join the waitlist — I'll reach out when a slot opens!"
-        : status === "waitlist" ? "All slots are taken right now — send your request and I'll add you to the waitlist!" : leadDefault;
+        ? "Commissions are closed right now, but you can still send a request to join the waitlist. I'll reach out when a slot opens!"
+        : status === "waitlist" ? "All slots are taken right now. Send your request and I'll add you to the waitlist!" : leadDefault;
     }
   }
   renderStatus({ status: C.status, slots_total: (C.slots || {}).total, slots_taken: (C.slots || {}).taken, queue: C.queue || [] });
@@ -352,7 +356,7 @@
   if (grid) {
     grid.innerHTML = art.map(function (a, i) {
       return '<button type="button" class="gallery-item" data-cat="' + esc(a.category) + '" data-i="' + i + '" aria-label="View ' + esc(a.title) + ' larger">' +
-        '<img src="' + esc(safeUrl(a.src, true)) + '" width="' + num(a.w) + '" height="' + num(a.h) + '" alt="' + esc(a.alt || a.title) + '" loading="lazy" decoding="async">' +
+        '<img src="' + esc(safeUrl(a.thumb || a.src, true)) + '" width="' + num(a.w) + '" height="' + num(a.h) + '" alt="' + esc(a.alt || a.title) + '" loading="lazy" decoding="async">' +
         '<span class="meta"><strong>' + esc(a.title) + "</strong><span>" + esc(a.tier || CAT[a.category] || "") + "</span></span></button>";
     }).join("");
 
@@ -505,7 +509,7 @@
     seg($("#calc-sticker"), "sticker", P.stickers || [], function (x) { return money(x.price); }, 0);
     seg($("#calc-ref"), "ref", P.refSheets || [], function (x) { return money(x.price); }, 0);
     $("#calc-bg").innerHTML = (P.backgrounds || []).map(function (b) {
-      return '<option value="' + esc(b.id) + '">' + esc(b.label) + " — " + (b.price ? "+" + money(b.price) : "free") + "</option>";
+      return '<option value="' + esc(b.id) + '">' + esc(b.label) + " (" + (b.price ? "+" + money(b.price) : "free") + ")" + "</option>";
     }).join("");
     $("#calc-addons").innerHTML = (P.addons || []).map(function (a) {
       return '<label class="check" data-only="' + esc((a.only || []).join(" ")) + '"><input type="checkbox" name="addon" value="' + esc(a.id) + '"> ' + esc(a.label) + " <em>+" + esc(range(a.min, a.max)) + "</em></label>";
@@ -854,7 +858,7 @@
         var ta = document.createElement("textarea");
         ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
         document.body.appendChild(ta); ta.select();
-        try { document.execCommand("copy"); done(); } catch (e) { toast("Couldn't copy — please select the text and copy it manually."); }
+        try { document.execCommand("copy"); done(); } catch (e) { toast("Couldn't copy. Please select the text and copy it manually."); }
         ta.remove();
       }
     };
@@ -868,7 +872,7 @@
         (contact.discord ? '<button class="btn" type="button" id="m-copy-dc">Copy Discord username</button>' : "") +
         "</div>";
       openModal("Your request is ready! ✦", body);
-      $("#m-copy").addEventListener("click", function () { copy(msg, "Request copied — paste it into your message! ♡"); });
+      $("#m-copy").addEventListener("click", function () { copy(msg, "Request copied! Paste it into your message ♡"); });
       if ($("#m-copy-dc")) $("#m-copy-dc").addEventListener("click", function () { copy(contact.discord, "Discord username copied!"); });
     };
 
@@ -934,7 +938,7 @@
           if ($("#m-copy-link")) $("#m-copy-link").addEventListener("click", function () { copy(link, "Link copied ✓"); });
           if ($("#m-copy-code")) $("#m-copy-code").addEventListener("click", function () { copy(code, "Code copied ✓"); });
         }).catch(function (err) {
-          showCopyModal(msg, "The request couldn't be sent (" + (err && err.message ? err.message : "network error") + "). Here it is so nothing is lost — you can send it to Jamzie directly.");
+          showCopyModal(msg, "The request couldn't be sent (" + (err && err.message ? err.message : "network error") + "). Here it is so nothing is lost. You can send it to Jamzie directly.");
         }).then(resetBtn);
       } else if (endpoint) {
         btn.disabled = true; btn.textContent = "Sending…";
@@ -953,7 +957,7 @@
           openModal("Request sent! ♡", "<p>Thank you so much! I'll look over your request and get back to you at the contact you gave me. Please don't send any payment until I've accepted your commission.</p><div class=\"modal-actions\"><a class=\"btn btn-primary\" href=\"#gallery\">Back to the gallery</a></div>");
           $$("#modal-body a").forEach(function (a) { a.addEventListener("click", closeModal); });
         }).catch(function () {
-          showCopyModal(msg, "Hmm, the form couldn't send right now — but here's your request so nothing is lost!");
+          showCopyModal(msg, "Hmm, the form couldn't send right now, but here's your request so nothing is lost!");
         }).then(resetBtn);
       } else {
         showCopyModal(msg);

@@ -63,7 +63,7 @@ window.JAMZIE = {
   /* ---------- About blurb (shown in the "Hi, I'm Jamzie" section) ---------- */
   pronouns: "she/her/it",
   about: [
-    "Hi! I'm Jamzie (she/her/it) — a furry & artist running on sugar, spice & questionable advice. When I'm not drawing, I'm baking treats & causing mischief. 🍓",
+    "Hi! I'm Jamzie (she/her/it), a furry & artist running on sugar, spice & questionable advice. When I'm not drawing, I'm baking treats & causing mischief. 🍓",
     "I draw soft, sparkly, glow-y furry art: everything from squishy little chibis and sticker packs to moody, fully rendered cinematic scenes. Every piece is drawn by hand, in my own style, with a lot of love for your characters. No AI, ever. ♡"
   ],
   loves: [
@@ -83,7 +83,7 @@ window.JAMZIE = {
   ],
   askFirst: [
     "NSFW / mature content (+$95 · 18+ clients & characters only)",
-    "Art trades — currently open!",
+    "Art trades (currently open!)",
     "Sensitive themes",
     "Fully private (never-posted) commissions",
     "Big or unusual projects"
@@ -100,45 +100,47 @@ window.JAMZIE = {
   /* ---------- Gallery ----------
      Put image files in assets/art/ and add a line here. Newest first.
      category: "cinematic" | "fullbody" | "halfbody" | "headshot" | "chibi" | "refsheet"
-     w / h: the image's pixel size (keeps the layout from jumping while loading). */
+     w / h: the image's pixel size (keeps the layout from jumping while loading).
+     thumb (optional): a smaller copy (~1100px wide) in assets/art/sm/ for the grid, so the
+     page loads fast; the full-size "src" still opens when someone clicks the piece. */
   gallery: [
     {
-      src: "assets/art/stargazer-astronaut.jpg", w: 2000, h: 1119,
+      src: "assets/art/stargazer-astronaut.jpg", thumb: "assets/art/sm/stargazer-astronaut.jpg", w: 2000, h: 1119,
       title: "Stargazer",
       category: "cinematic",
       tier: "Cinematic Illustration",
       alt: "A fluffy pink horned dragon-shark in a glowing astronaut suit and bubble helmet sits on a rock, gazing out at a purple planet and a galaxy-streaked sky."
     },
     {
-      src: "assets/art/porch-moonlight.jpg", w: 2000, h: 1350,
+      src: "assets/art/porch-moonlight.jpg", thumb: "assets/art/sm/porch-moonlight.jpg", w: 2000, h: 1350,
       title: "Porch Light",
       category: "fullbody",
       tier: "Full Body · Full Render · Detailed Scenery",
       alt: "A pink and white horned dragon-shark with purple and blue markings lounges on wooden porch steps at night, under string lights and a full moon, smoke curling from one hand."
     },
     {
-      src: "assets/art/poodle-chibi-sheet.jpg", w: 2000, h: 1650,
+      src: "assets/art/poodle-chibi-sheet.jpg", thumb: "assets/art/sm/poodle-chibi-sheet.jpg", w: 2000, h: 1650,
       title: "Poodle Moods",
       category: "chibi",
       tier: "Expression / Sticker Sheet",
-      alt: "Four chibi expressions of a fluffy pastel poodle in a striped periwinkle sweater: shy, sobbing, excited on a leash, and blushing — captioned 'none of these thoughts are in the bible.'"
+      alt: "Four chibi expressions of a fluffy pastel poodle in a striped periwinkle sweater: shy, sobbing, excited on a leash, and blushing, captioned 'none of these thoughts are in the bible.'"
     },
     {
-      src: "assets/art/lunaari-ref-sheet.jpg", w: 2400, h: 1151,
+      src: "assets/art/lunaari-ref-sheet.jpg", thumb: "assets/art/sm/lunaari-ref-sheet.jpg", w: 2400, h: 1151,
       title: "Lunaari",
       category: "refsheet",
       tier: "Reference Sheet",
       alt: "Reference sheet of Lunaari, a black and white bat creature with huge blue-lined ears, iridescent pink and purple holographic wings, moon and star markings, shown front, back and side, with two headshots, a tail detail and paw prints."
     },
     {
-      src: "assets/art/monarch-fox-ref-sheet.jpg", w: 2000, h: 858,
+      src: "assets/art/monarch-fox-ref-sheet.jpg", thumb: "assets/art/sm/monarch-fox-ref-sheet.jpg", w: 2000, h: 858,
       title: "Monarch Fox",
       category: "refsheet",
       tier: "Reference Sheet",
       alt: "Reference sheet of an orange fox with huge monarch butterfly wings and antennae, wearing a black corset outfit, shown front and back, with a fluffy headshot, eye and paw-pad details and a color palette."
     },
     {
-      src: "assets/art/sweet-grin-headshot.jpg", w: 1600, h: 1602,
+      src: "assets/art/sweet-grin-headshot.jpg", thumb: "assets/art/sm/sweet-grin-headshot.jpg", w: 1600, h: 1602,
       title: "Sweet Grin",
       category: "headshot",
       tier: "Headshot",
