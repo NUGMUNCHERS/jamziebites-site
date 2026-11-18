@@ -148,6 +148,57 @@ async function sendDiscord(r: Req, m: ReturnType<typeof message>) {
 class Retry extends Error {}
 class GiveUp extends Error {}
 
+// ---------- DMs to Jamzie herself ----------
+// Her account is looked up ONCE by the name in settings.owner_discord (username,
+// display name or server nickname, and it must match exactly one member), then
+// pinned by account ID so nobody can grab her alerts by copying her name later.
+async function ownerId(): Promise<string> {
+  const [s] = await sql`select owner_discord, owner_discord_id from public.settings where id = 1`;
+  if (s?.owner_discord_id) return String(s.owner_discord_id);
+  const want = String(s?.owner_discord ?? "").trim();
+  if (!want) throw new Retry("No owner Discord name set.");
+  if (!BOT || !GUILD) throw new Retry("Discord isn't set up yet.");
+  const norm = (x: unknown) => String(x ?? "").toLowerCase().replace(/[\s._]/g, "");
+  const target = norm(want);
+  // deno-lint-ignore no-explicit-any
+  const found = new Map<string, any>();
+  for (const q of new Set([want, want.replace(/\s+/g, ""), want.split(/\s+/)[0]])) {
+    const r = await discord(`/guilds/${GUILD}/members/search?limit=100&query=${encodeURIComponent(q)}`);
+    // deno-lint-ignore no-explicit-any
+    if (r.ok) for (const m of r.j as any[]) if (m?.user && !m.user.bot) found.set(String(m.user.id), m);
+  }
+  const isHit = (m: { user: { username?: string; global_name?: string }; nick?: string }) =>
+    [m.user.username, m.user.global_name, m.nick].some((n) => norm(n) === target);
+  if (![...found.values()].some(isHit)) {
+    // Search only matches usernames/nicknames, so also scan the member list for display names.
+    const all = await discord(`/guilds/${GUILD}/members?limit=1000`);
+    // deno-lint-ignore no-explicit-any
+    if (all.ok) for (const m of all.j as any[]) if (m?.user && !m.user.bot) found.set(String(m.user.id), m);
+  }
+  const hits = [...found.values()].filter(isHit);
+  if (hits.length !== 1) throw new Retry(hits.length ? `More than one member matches "${want}".` : `Nobody named "${want}" found in the Discord server (checked ${found.size} members).`);
+  const m = hits[0];
+  const g = await discord(`/guilds/${GUILD}`);
+  const isOwner = g.ok && String(g.j?.owner_id) === String(m.user.id);
+  const label = `@${m.user.username}` + (m.user.global_name ? ` (${m.user.global_name})` : "") + (m.nick ? ` [nick: ${m.nick}]` : "") + (isOwner ? " · server owner" : "");
+  await sql`update public.settings set owner_discord_id = ${String(m.user.id)}::text, owner_discord_found = ${label.slice(0, 200)}::text where id = 1`;
+  return String(m.user.id);
+}
+async function dmOwner(text: string) {
+  const uid = await ownerId();
+  const ch = await discord("/users/@me/channels", { method: "POST", body: JSON.stringify({ recipient_id: uid }) });
+  if (!ch.ok) throw new Retry(`Couldn't open a DM with Jamzie (${ch.status}): ${ch.j?.message ?? ""}`);
+  const msg = await discord(`/channels/${ch.j.id}/messages`, {
+    method: "POST",
+    body: JSON.stringify({
+      content: text.slice(0, 1900),
+      components: [{ type: 1, components: [{ type: 2, style: 5, label: "Open studio", url: `${SITE}/admin.html` }] }],
+      allowed_mentions: { parse: [] },
+    }),
+  });
+  if (!msg.ok) throw new Retry(`DM to Jamzie failed (${msg.status}): ${msg.j?.message ?? ""}`);
+}
+
 Deno.serve(async () => {
   const jobs = await sql`
     update public.notifications n
@@ -185,5 +236,29 @@ Deno.serve(async () => {
       results.push({ id: job.id, sent: false, error: why });
     }
   }
-  return Response.json({ processed: results.length, results });
+
+  // ---------- Alerts for Jamzie ----------
+  const alerts = await sql`
+    update public.owner_alerts a
+       set attempts = a.attempts + 1, next_try_at = now() + interval '3 minutes'
+     where a.id in (select id from public.owner_alerts
+                     where status = 'pending' and next_try_at <= now()
+                     order by id limit 15 for update skip locked)
+    returning a.id, a.text, a.attempts, a.created_at`;
+  for (const a of alerts) {
+    try {
+      await dmOwner(String(a.text));
+      await sql`update public.owner_alerts set status = 'sent', sent_at = now(), last_error = null where id = ${a.id}::bigint`;
+      results.push({ alert: a.id, sent: true });
+    } catch (e) {
+      const why = (e instanceof Error ? e.message : String(e)).slice(0, 480);
+      if (Date.now() - new Date(a.created_at).getTime() > GIVE_UP_MS) {
+        await sql`update public.owner_alerts set status = 'failed', last_error = ${why}::text where id = ${a.id}::bigint`;
+      } else {
+        await sql`update public.owner_alerts set last_error = ${why}::text, next_try_at = now() + make_interval(mins => ${Math.min(5 * Number(a.attempts), 60)}::int) where id = ${a.id}::bigint`;
+      }
+      results.push({ alert: a.id, sent: false, error: why });
+    }
+  }
+  return Response.json({ processed: results.length });
 });
