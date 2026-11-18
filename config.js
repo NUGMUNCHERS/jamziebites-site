@@ -146,6 +146,55 @@ window.JAMZIE = {
       category: "headshot",
       tier: "Headshot",
       alt: "Close-up headshot of a pale, cream-toned canine with long lashes and a wide, happy grin, tongue out, in front of a soft dark forest background."
+    },
+    {
+      src: "assets/art/campfire-stories.jpg", thumb: "assets/art/sm/campfire-stories.jpg", w: 2000, h: 1334,
+      title: "Campfire Stories",
+      category: "fullbody",
+      tier: "Full Body · Base / YCH",
+      alt: "Three fluffy pale canine cubs in hoodies sit around a glowing campfire in a dark autumn forest, laughing and telling stories. Captioned 'CampFire Stories Base'."
+    },
+    {
+      src: "assets/art/dutchie-plushie.jpg", thumb: "assets/art/sm/dutchie-plushie.jpg", w: 1906, h: 1933,
+      title: "Dutchie & Plushie",
+      category: "fullbody",
+      tier: "Full Body · Base / YCH",
+      alt: "A white and red striped Dutch angel dragon with pink feathered wings and little red horns hugs a matching plushie against a pink starry sky. Captioned 'dutchie with a plushie base'."
+    },
+    {
+      src: "assets/art/sweater-weather.jpg", thumb: "assets/art/sm/sweater-weather.jpg", w: 1080, h: 1040,
+      title: "Sweater Weather",
+      category: "fullbody",
+      tier: "Full Body · Base / YCH",
+      alt: "A fluffy white canine wrapped in a plaid blanket and knit beanie holds a steaming mug by a window with falling autumn leaves and a lit candle. Captioned 'Sweater weather base'."
+    },
+    {
+      src: "assets/art/ice-storm-dragon.jpg", thumb: "assets/art/sm/ice-storm-dragon.jpg", w: 1080, h: 1008,
+      title: "Dragon of Ice and Storm",
+      category: "headshot",
+      tier: "Headshot",
+      alt: "Side-profile headshot of a pale pink and icy blue feathered dragon with a glowing outline and a thin gold chain piercing, on a soft purple background."
+    },
+    {
+      src: "assets/art/sakura-blood.jpg", thumb: "assets/art/sm/sakura-blood.jpg", w: 1065, h: 1009,
+      title: "Sakura Blood",
+      category: "headshot",
+      tier: "Headshot / Icon",
+      alt: "Neon pink, blue and white fluffy canine icon with a big open grin, framed in a dark circle with drifting sakura petals."
+    },
+    {
+      src: "assets/art/cherry-headshot.jpg", thumb: "assets/art/sm/cherry-headshot.jpg", w: 1228, h: 1128,
+      title: "Cherry",
+      category: "headshot",
+      tier: "Headshot",
+      alt: "Grinning red and cream canine with spiky crimson fur, cherry earrings and freckles, swirling cloud-like cream fur, and red flower shapes on a deep red background."
+    },
+    {
+      src: "assets/art/orchid-mantis-dutchie.jpg", thumb: "assets/art/sm/orchid-mantis-dutchie.jpg", w: 1280, h: 960,
+      title: "Orchid Mantis Dutchie",
+      category: "refsheet",
+      tier: "Adopt · Reference Sheet",
+      alt: "Reference sheet for a pastel pink and blue orchid-mantis Dutch angel dragon with feathered wings and blossoms, showing a headshot, full body, eye details, a color palette and an orchid mantis photo for reference."
     }
   ],
 
