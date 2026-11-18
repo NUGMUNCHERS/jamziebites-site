@@ -64,7 +64,8 @@ window.JAMZIE = {
   pronouns: "she/her/it",
   about: [
     "Hi! I'm Jamzie (she/her/it), a furry & artist running on sugar, spice & questionable advice. When I'm not drawing, I'm baking treats & causing mischief. 🍓",
-    "I draw soft, sparkly, glow-y furry art: everything from squishy little chibis and sticker packs to moody, fully rendered cinematic scenes. Every piece is drawn by hand, in my own style, with a lot of love for your characters. No AI, ever. ♡"
+    "I draw soft, sparkly, glow-y furry art: everything from squishy little chibis and sticker packs to moody, fully rendered cinematic scenes. Every piece is drawn by hand, in my own style, with a lot of love for your characters. No AI, ever. ♡",
+    "You might know me as hot.pepper.jam! That's the name I used to post my art under, so some older pieces still have it on them. Same artist, new name. 🌶️"
   ],
   loves: [
     "Fluffy & floofy OCs",
