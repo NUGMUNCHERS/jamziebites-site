@@ -78,13 +78,13 @@ If the form ever fails to send, the site falls back to the copy-paste message, s
 
 ## Payments (pay.html)
 
-The **Pay** page sends clients to a Stripe Payment Link. They type in the exact amount you quoted (minimum $25) along with their username. Stripe handles the card, Apple Pay and Google Pay, and emails them a receipt. Each payment shows up in your Stripe dashboard under **Payments**, with the client's username in the "client reference" field.
+The **Pay** page sends clients to a Stripe Payment Link. They type in the exact amount you quoted (minimum $15) along with their username. Stripe handles the card, Apple Pay and Google Pay, and emails them a receipt. Each payment shows up in your Stripe dashboard under **Payments**, with the client's username in the "client reference" field.
 
 **Going live (do this before taking real money):**
 
 1. In Stripe, click **Switch to live account** and finish activation: your ID, bank account for payouts, and tax info. Only you can do this.
 2. Still in live mode, go to **Payment Links** and create the same link:
-   - Type: **"Customers choose what to pay"**, USD, minimum $25.
+   - Type: **"Customers choose what to pay"**, USD, minimum $15.
    - Turn on **collect customer names**.
    - Add a custom text field: "Username from your commission request".
    - Under **After payment**, redirect to `https://jamziebites.com/pay.html?paid=1`.
