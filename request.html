@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://babujgeapxhrcrrrxoet.supabase.co; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
   <meta name="referrer" content="no-referrer">
   <title>Your Commission · JamzieBites</title>
   <meta name="description" content="Your private JamzieBites commission page: status, progress and payment.">
@@ -93,6 +93,27 @@
           <p class="pay-fine req-foot">🔖 <strong>Bookmark this page.</strong> It's your private link, so please don't share it. <span id="r-via"></span></p>
         </div>
 
+        <div class="card req-card msg-card" id="m-card" hidden>
+          <h2>💬 Messages with Jamzie</h2>
+          <p class="req-meta">Sketches, progress pics and questions show up here. You can reply and send pictures too.</p>
+          <div class="msg-thread" id="m-thread" aria-live="polite"></div>
+          <form class="msg-compose" id="m-form" novalidate>
+            <label class="sr-only" for="m-text">Your message</label>
+            <textarea class="input" id="m-text" maxlength="4000" placeholder="Write a message to Jamzie…"></textarea>
+            <ul class="file-list" id="m-files-list"></ul>
+            <div class="msg-compose-row">
+              <div class="file-pick" style="margin:0">
+                <label class="btn btn-sm" for="m-files">📎 Attach</label>
+                <input type="file" id="m-files" multiple accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,application/zip" hidden>
+                <span class="file-note">Pictures, PDF or ZIP · 25 MB each</span>
+              </div>
+              <button class="btn btn-primary" type="submit" id="m-send">Send ✦</button>
+            </div>
+            <p class="pay-fine req-err" id="m-err" role="alert"></p>
+          </form>
+          <p class="pay-fine" id="m-closed" hidden>This request is closed, so messages are turned off.</p>
+        </div>
+
         <div class="card req-card req-missing" id="r-missing" hidden>
           <div class="big-emoji" aria-hidden="true">🔍</div>
           <h2>We couldn't find that request</h2>
@@ -119,5 +140,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="assets/main.js"></script>
   <script src="assets/request.js"></script>
+  <script src="assets/request-messages.js"></script>
 </body>
 </html>

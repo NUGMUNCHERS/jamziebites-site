@@ -832,3 +832,36 @@ textarea.input { min-height: 130px; resize: vertical; line-height: 1.5; }
 .tip-custom span { font-weight: 900; font-size: 1.2rem; }
 .pay-or { text-align: center; color: var(--muted); font-weight: 800; margin: 14px 0; }
 .pay-lead { color: var(--ink-soft); margin: 6px 0 4px; }
+
+/* ---------- Request form: attached pictures ---------- */
+.file-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.file-pick label.btn { cursor: pointer; margin: 0; font-weight: 800; }
+.file-note { font-size: .8rem; color: var(--muted); }
+.file-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.file-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line); font-size: .88rem; font-weight: 700; }
+.file-list li span { overflow-wrap: anywhere; }
+.file-list small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+.file-x { border: 0; background: none; color: var(--muted); font-size: 1rem; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
+.file-x:hover { color: #e23b62; background: var(--surface); }
+
+/* ---------- Quote calculator: cinematic "what's included" ---------- */
+.calc-included .check-list { margin: 6px 0 8px; }
+.calc-note { font-size: .88rem; color: var(--ink-soft); margin: 0; }
+
+/* ---------- Request page: messages ---------- */
+.msg-card h2 { font-size: 1.4rem; margin: 0 0 4px; }
+.msg-thread { display: grid; gap: 12px; margin: 16px 0; max-height: 560px; overflow-y: auto; padding: 4px 2px; }
+.msg { max-width: 86%; padding: 12px 14px; border-radius: 16px; background: var(--bg-2); border: 1px solid var(--line); }
+.msg.me { justify-self: end; background: color-mix(in srgb, var(--peri) 14%, var(--surface)); }
+.msg.artist { justify-self: start; background: color-mix(in srgb, var(--pink) 12%, var(--surface)); }
+.msg-meta { font-size: .76rem; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
+.msg-body { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.msg-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.msg-files a.thumb { display: block; width: 140px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.msg-files a.thumb img { display: block; width: 100%; height: 110px; object-fit: cover; }
+.msg-files a.thumb span, .msg-files a.doc { display: block; padding: 5px 8px; font-size: .75rem; font-weight: 700; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-files a.doc { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); max-width: 220px; }
+.msg-empty { color: var(--muted); font-weight: 600; text-align: center; padding: 14px; }
+.msg-compose { display: grid; gap: 10px; }
+.msg-compose textarea { min-height: 90px; }
+.msg-compose-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }

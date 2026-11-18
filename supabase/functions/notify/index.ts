@@ -63,6 +63,12 @@ function message(kind: string, r: Req) {
         `I'll send your final files over (if I haven't already). Thank you so much for commissioning me, it truly means the world. ♡`],
       button: "View my request",
     },
+    message: {
+      subject: `New message from Jamzie about your commission 💌 (${r.code})`,
+      lines: [`Hi ${r.name}! Jamzie sent you an update on your ${piece}. It could be a sketch, a work-in-progress, or a quick question. ✨`,
+        `Open your request page to see it and reply. You can send pictures back there too.`],
+      button: "View message",
+    },
     declined: {
       subject: `About your commission request (${r.code})`,
       lines: [`Hi ${r.name}, thank you so much for your interest in a ${piece}.`,
@@ -142,36 +148,7 @@ async function sendDiscord(r: Req, m: ReturnType<typeof message>) {
 class Retry extends Error {}
 class GiveUp extends Error {}
 
-// Discord wants a bot to have connected to its gateway at least once before it
-// can DM anyone. Calling this function with ?connect=1 does that one-time hello.
-function gatewayHello(): Promise<string> {
-  return new Promise((resolve) => {
-    const ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
-    const finish = (v: string) => { clearTimeout(t); try { ws.close(); } catch { /* */ } resolve(v); };
-    const t = setTimeout(() => finish("timeout"), 12000);
-    ws.onmessage = (ev) => {
-      const p = JSON.parse(String(ev.data));
-      if (p.op === 10) ws.send(JSON.stringify({ op: 2, d: { token: BOT, intents: 0, properties: { os: "linux", browser: "jamziebites", device: "jamziebites" } } }));
-      else if (p.t === "READY") finish("connected as " + p.d.user.username);
-      else if (p.op === 9) finish("rejected (check the bot token)");
-    };
-    ws.onclose = (e) => finish("closed " + e.code);
-  });
-}
-
-Deno.serve(async (req) => {
-  const url = new URL(req.url);
-  if (url.searchParams.get("connect") === "1") {
-    // Also lists the servers the bot has joined (names + IDs only), to fill in DISCORD_GUILD_ID.
-    const guilds = BOT ? await discord("/users/@me/guilds") : null;
-    return Response.json({
-      discord: BOT ? await gatewayHello() : "no bot token",
-      servers: guilds?.ok ? (guilds.j as { id: string; name: string }[]).map((g) => ({ id: g.id, name: g.name })) : [],
-      server_id_set: GUILD ? GUILD : "not set",
-      email: RESEND_KEY ? "key set" : "no key",
-    });
-  }
-
+Deno.serve(async () => {
   const jobs = await sql`
     update public.notifications n
        set attempts = n.attempts + 1, next_try_at = now() + interval '3 minutes'

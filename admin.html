@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://babujgeapxhrcrrrxoet.supabase.co; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow, noarchive, noai, noimageai">
   <title>Studio · JamzieBites</title>
@@ -150,6 +150,21 @@
       <button class="icon-btn" type="button" id="d-close" aria-label="Close">✕</button>
     </div>
     <div id="d-body"></div>
+    <section class="adm-chat" id="d-chat">
+      <h3>💬 Messages &amp; files <small class="adm-muted adm-small" id="d-chat-sub"></small></h3>
+      <div class="adm-thread" id="d-thread"></div>
+      <form id="d-mform" class="adm-mform" novalidate>
+        <label class="sr-only" for="d-mtext">Message to the client</label>
+        <textarea class="input" id="d-mtext" maxlength="4000" placeholder="Send a sketch, WIP or question… (the client gets an email/Discord ping)"></textarea>
+        <ul class="file-list" id="d-mfiles-list"></ul>
+        <div class="adm-mrow">
+          <label class="btn btn-sm" for="d-mfiles">📎 Attach</label>
+          <input type="file" id="d-mfiles" multiple accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,application/zip" hidden>
+          <button class="btn btn-primary btn-sm" type="submit" id="d-msend">Send to client ✦</button>
+        </div>
+        <p class="adm-error" id="d-merr" role="alert"></p>
+      </form>
+    </section>
     <form id="d-form" class="adm-edit">
       <h3>Manage</h3>
       <div class="adm-edit-grid">

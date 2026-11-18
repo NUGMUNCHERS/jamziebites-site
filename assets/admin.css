@@ -103,3 +103,21 @@ body.admin { background: var(--bg); min-height: 100vh; }
 .adm-msg .btn { margin-left: 6px; }
 .adm-msgfail { background: #fff1d6; color: #8a5a00; }
 :root[data-theme="dark"] .adm-msgfail { background: #4a3a10; color: #ffd166; }
+
+/* Messages & files with the client */
+.adm-chat { border-top: 1px dashed var(--line); padding-top: 12px; }
+.adm-chat h3 { margin: 0 0 8px; }
+.adm-thread { display: grid; gap: 10px; max-height: 420px; overflow-y: auto; padding: 2px; margin-bottom: 10px; }
+.adm-bubble { max-width: 88%; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg-2); }
+.adm-bubble.me { justify-self: end; background: color-mix(in srgb, var(--pink) 12%, var(--surface)); }
+.adm-bubble.them { justify-self: start; background: color-mix(in srgb, var(--peri) 12%, var(--surface)); }
+.adm-bubble small { display: block; color: var(--muted); font-weight: 800; font-size: .75rem; }
+.adm-bubble p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.adm-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.adm-thumb img { width: 110px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.adm-doc { display: inline-block; padding: 5px 9px; border: 1px solid var(--line); border-radius: 10px; font-size: .8rem; font-weight: 700; background: var(--surface); }
+.adm-mform { display: grid; gap: 8px; }
+.adm-mform textarea { min-height: 80px; }
+.adm-mrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.adm-mrow label.btn { cursor: pointer; margin: 0; }
+.adm-msgnew { background: color-mix(in srgb, var(--peri) 25%, transparent); color: var(--peri-deep); }

@@ -76,6 +76,13 @@ If the form ever fails to send, the site falls back to the copy-paste message, s
   - Split payments add up. If someone pays $50 and then the remaining $20 of a $70 piece, it's marked paid on the second payment.
   - **Payment history** lists every payment, and each request shows how much was received.
   - Stripe also emails you a receipt for every successful payment. Install the **Stripe app** on your phone for instant push notifications.
+- **Messages & files:**
+  - Open any request in the studio and scroll to **💬 Messages & files**. Send sketches, WIPs, final files or questions there.
+  - The client sees them on their private request page, gets an email/Discord ping, and can reply with pictures too.
+  - Requests with unread client messages show **💬 new**.
+  - Files are private: only that client (through their link) and you can open them. Each file can be up to 25 MB (PNG/JPG/WEBP/GIF/PDF/ZIP).
+  - Deleting a request deletes its files too.
+- **Character question:** the request form asks whether the client already has a character. If they don't, the commission type switches to Custom Design Ref Sheet. Clients can attach pictures of their refs, which arrive as the first message in the request.
 - **Mark paid** still works by hand, for payments made outside the site (like an art trade or cash).
 - **Progress:** move each piece through Sketch → Lineart → Color → Rendering → Done. The public queue updates instantly.
 - **Shop status:** switch between Open, Waitlist and Closed, and set the total number of slots. The badge on the site updates instantly.

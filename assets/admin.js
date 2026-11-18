@@ -186,9 +186,16 @@
     var both = await Promise.all([
       sb.from("requests").select("*").order("created_at", { ascending: false }).limit(1000),
       sb.from("payments").select("*").order("created_at", { ascending: false }).limit(200),
-      sb.from("notifications").select("*").order("created_at", { ascending: true }).limit(3000)
+      sb.from("notifications").select("*").order("created_at", { ascending: true }).limit(3000),
+      sb.from("messages").select("*").order("created_at", { ascending: true }).limit(5000)
     ]);
-    var r = both[0], p = both[1], n = both[2];
+    var r = both[0], p = both[1], n = both[2], mm = both[3];
+    if (!mm.error) {
+      var newClientMsgs = (mm.data || []).filter(function (x) { return x.sender === "client" && !x.read_by_artist && !seenMsgIds[x.id]; });
+      if (msgsLoaded && newClientMsgs.length) toast("💬 New message from a client");
+      newClientMsgs.forEach(function (x) { seenMsgIds[x.id] = true; });
+      msgs = mm.data || []; msgsLoaded = true;
+    }
     if (r.error) { toast("Couldn't load requests: " + r.error.message); return; }
     data = r.data || [];
     if (!n.error) notes = n.data || [];
@@ -205,6 +212,13 @@
 
   /* ---------- Payments (written by the Stripe webhook, never by this page) ---------- */
   var payments = [], paymentsLoaded = false, seenIds = {}, notes = [];
+  var msgs = [], msgsLoaded = false, seenMsgIds = {}, mPicked = [];
+  var M_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf", "application/zip", "application/x-zip-compressed"];
+  function msgsFor(id) { return msgs.filter(function (x) { return x.request_id === id; }); }
+  function unreadFor(id) { return msgs.filter(function (x) { return x.request_id === id && x.sender === "client" && !x.read_by_artist; }).length; }
+  function fsize(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round((b || 0) / 1024)) + " KB"; }
+  function safeName(n) { return (String(n).normalize("NFKD").replace(/[^\w.\- ]+/g, "").replace(/\s+/g, "-").replace(/^[.\-]+/, "").slice(-80)) || "file"; }
+  function uuid() { return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)); }
   var SITE = "https://jamziebites.com";
   function privateLink(r) { return r && /^[0-9a-f]{36}$/.test(r.token || "") ? SITE + "/request.html?t=" + r.token : ""; }
   var NOTE_KIND = { received: "Got your request", accepted: "Accepted + pay link", paid: "Payment received", started: "Work started", done: "Finished", declined: "Declined" };
@@ -289,6 +303,7 @@
       return '<button type="button" class="card adm-row" data-id="' + esc(r.id) + '">' +
         '<span class="adm-row-main"><b>' + esc(r.name) + '</b> <span class="adm-code-pill">' + esc(r.code) + '</span>' +
         (r.nsfw ? ' <span class="adm-pill adm-nsfw">18+</span>' : "") +
+        (unreadFor(r.id) ? ' <span class="adm-pill adm-msgnew">💬 ' + unreadFor(r.id) + " new</span>" : "") +
         (failedNotes(r.id).length ? ' <span class="adm-pill adm-msgfail" title="A message to this client hasn&#39;t gone through">✉️ not delivered</span>' : "") +
         '<small>' + esc(r.type) + (r.character_name ? " · " + esc(r.character_name) : "") + " · " + esc(when(r.created_at)) + '</small></span>' +
         '<span class="adm-row-side"><span class="adm-pill st-' + esc(r.status) + '">' + esc(STATUS_LABEL[r.status] || r.status) + '</span>' +
@@ -340,7 +355,7 @@
         esc(privateLink(r)) + '" target="_blank" rel="noopener noreferrer">Open</a><br><small class="adm-muted">Their status page with a Pay button. It is sent to them automatically.</small>' : "") +
       '<div id="d-msgs"></div>' +
       field("Type", esc(r.type) + (r.nsfw ? ' <span class="adm-pill adm-nsfw">NSFW · 18+ confirmed</span>' : "")) +
-      field("Character", esc(r.character_name)) +
+      field("Character", esc(r.character_name) + (r.has_character === "design" ? ' <span class="adm-pill">needs a new design</span>' : r.has_character === "yes" ? ' <small class="adm-muted">(has their own character)</small>' : "")) +
       field("References", linkify(r.refs)) +
       field("Idea", linkify(r.description)) +
       field("Quote estimate", r.quote ? '<pre class="adm-pre">' + esc(r.quote) + "</pre>" : "") +
@@ -357,6 +372,9 @@
       field("Deadline", esc(r.deadline)) +
       field("Privacy", esc(r.privacy));
     renderMsgs();
+    mPicked = []; renderMPicked(); $("d-mtext").value = ""; $("d-merr").textContent = "";
+    renderThread();
+    markRead(r.id);
     $("d-status").value = r.status;
     $("d-email").value = r.email || "";
     $("d-discord").value = r.discord || "";
@@ -371,6 +389,88 @@
     document.body.style.overflow = "hidden";
     $("d-close").focus();
   }
+  async function renderThread() {
+    if (!current) return;
+    var id = current.id, list = msgsFor(id);
+    $("d-chat-sub").textContent = privateLink(current) ? "· they see these on their request page" : "";
+    if (!list.length) { $("d-thread").innerHTML = '<p class="adm-muted adm-small">No messages yet. Send a sketch or a question below ✨</p>'; return; }
+    var paths = [];
+    list.forEach(function (m) { (m.files || []).forEach(function (f) { if (f && f.path) paths.push(f.path); }); });
+    var urls = {};
+    if (paths.length) {
+      var s = await sb.storage.from("portal").createSignedUrls(paths, 3600);
+      (s.data || []).forEach(function (d) { if (d.signedUrl) urls[d.path] = d.signedUrl; });
+    }
+    if (!current || current.id !== id) return;
+    $("d-thread").innerHTML = list.map(function (m) {
+      var mine = m.sender === "artist";
+      var files = (m.files || []).map(function (f) {
+        var u = urls[f.path];
+        if (!u) return '<span class="adm-doc">' + esc(f.name) + "</span>";
+        return /^image\//.test(f.type || "")
+          ? '<a class="adm-thumb" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer"><img src="' + esc(u) + '" alt="' + esc(f.name) + '" loading="lazy"></a>'
+          : '<a class="adm-doc" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">📄 ' + esc(f.name) + " · " + esc(fsize(f.size)) + "</a>";
+      }).join("");
+      return '<div class="adm-bubble ' + (mine ? "me" : "them") + '"><small>' + (mine ? "You" : esc(current.name)) + " · " + esc(when(m.created_at)) + "</small>" +
+        (m.body ? '<p>' + esc(m.body) + "</p>" : "") + (files ? '<div class="adm-files">' + files + "</div>" : "") + "</div>";
+    }).join("");
+    $("d-thread").scrollTop = $("d-thread").scrollHeight;
+  }
+  async function markRead(id) {
+    if (!unreadFor(id)) return;
+    var r = await sb.from("messages").update({ read_by_artist: true }).eq("request_id", id).eq("sender", "client").eq("read_by_artist", false).select("id");
+    if (!r.error) { msgs = msgs.map(function (x) { return x.request_id === id && x.sender === "client" ? Object.assign({}, x, { read_by_artist: true }) : x; }); render(); }
+  }
+  function renderMPicked() {
+    $("d-mfiles-list").innerHTML = mPicked.map(function (f, i) {
+      return '<li><span>' + esc(f.name) + " <small>" + esc(fsize(f.size)) + '</small></span><button type="button" class="file-x" data-rm="' + i + '" aria-label="Remove">✕</button></li>';
+    }).join("");
+  }
+  $("d-mfiles").addEventListener("change", function () {
+    var skipped = [];
+    Array.prototype.forEach.call(this.files || [], function (f) {
+      if (mPicked.length >= 10) return skipped.push(f.name + " (10 max)");
+      if (M_TYPES.indexOf(f.type) < 0) return skipped.push(f.name + " (type)");
+      if (f.size > 25 * 1024 * 1024) return skipped.push(f.name + " (over 25 MB)");
+      mPicked.push(f);
+    });
+    this.value = ""; renderMPicked();
+    $("d-merr").textContent = skipped.length ? "Skipped: " + skipped.join(", ") : "";
+  });
+  $("d-mfiles-list").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-rm]"); if (!b) return;
+    mPicked.splice(Number(b.getAttribute("data-rm")), 1); renderMPicked();
+  });
+  $("d-mform").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (!current) return;
+    var text = $("d-mtext").value.trim();
+    if (!text && !mPicked.length) { $("d-merr").textContent = "Write a message or attach a file."; return; }
+    var id = current.id, btn = $("d-msend"), files = [];
+    btn.disabled = true; $("d-merr").textContent = "";
+    try {
+      for (var i = 0; i < mPicked.length; i++) {
+        var f = mPicked[i];
+        btn.textContent = "Uploading " + (i + 1) + " of " + mPicked.length + "…";
+        var path = "requests/" + id + "/artist/" + uuid() + "-" + safeName(f.name);
+        var up = await sb.storage.from("portal").upload(path, f, { contentType: f.type, upsert: false });
+        if (up.error) throw new Error(f.name + ": " + up.error.message);
+        files.push({ path: path, name: f.name, size: f.size, type: f.type });
+      }
+      btn.textContent = "Sending…";
+      var ins = await sb.from("messages").insert({ request_id: id, sender: "artist", body: text || null, files: files }).select();
+      if (ins.error) throw new Error(ins.error.message);
+      msgs = msgs.concat(ins.data || []);
+      $("d-mtext").value = ""; mPicked = []; renderMPicked();
+      toast((current.email || current.discord) ? "Sent ✓ " + current.name + " gets a ping" : "Sent ✓ (no email/Discord on file, so no ping)");
+      renderThread();
+      setTimeout(reloadNotes, 2500);
+    } catch (x) {
+      $("d-merr").textContent = "Couldn't send: " + x.message;
+    }
+    btn.disabled = false; btn.textContent = "Send to client ✦";
+  });
+
   function renderMsgs() {
     if (!current || !$("d-msgs")) return;
     var mine = notesFor(current.id);
@@ -464,6 +564,13 @@
   $("d-delete-yes").addEventListener("click", async function () {
     if (!current) return;
     var id = current.id;
+    try {
+      for (var who of ["client", "artist"]) {
+        var ls = await sb.storage.from("portal").list("requests/" + id + "/" + who, { limit: 1000 });
+        var names = (ls.data || []).map(function (o) { return "requests/" + id + "/" + who + "/" + o.name; });
+        if (names.length) await sb.storage.from("portal").remove(names);
+      }
+    } catch (x) { /* files are private anyway; the request delete still goes ahead */ }
     var r = await sb.from("requests").delete().eq("id", id).select();
     if (r.error || !r.data || !r.data.length) { $("d-err").textContent = "Couldn't delete."; return; }
     data = data.filter(function (x) { return x.id !== id; });

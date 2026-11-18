@@ -703,6 +703,84 @@
     };
     via.addEventListener("change", syncVia);
     syncVia();
+
+    // "Do you already have a character?" + attached pictures
+    var hasChar = $("#f-hasChar"), fRefs = $("#f-refs"), fFiles = $("#f-files");
+    var pickedFiles = [];
+    var FILE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"];
+    var MAX_FILES = 10, MAX_BYTES = 25 * 1024 * 1024;
+    var prettySize = function (b) { return b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB"; };
+    var syncRefs = function () {
+      var design = hasChar.value === "design";
+      $("#refs-label").innerHTML = design ? "Inspiration &amp; ideas <span class=\"hint\">(optional)</span>" : 'Character ref sheet <span class="req">*</span>';
+      $("#refs-help").innerHTML = design
+        ? "Tell me about the character you'd love: species, colors, vibe. Links or pictures of inspiration help a lot!"
+        : "A character ref sheet is <strong>required</strong> for all commissions. Add a link, attach pictures, or both.";
+      fRefs.placeholder = design ? "Species, colors, personality, outfits, anything that inspires you…"
+        : "Paste links to your character's ref sheet (Toyhouse, Google Drive, imgur…) one per line, or attach pictures below";
+      fRefs.required = !design && !pickedFiles.length;
+      if (!fRefs.required) $("#fld-refs").classList.remove("invalid");
+      if (design) {
+        var t = $("#f-type");
+        if (t && t.value !== "Custom Design Ref Sheet") { t.value = "Custom Design Ref Sheet"; var tf = t.closest(".field"); if (tf) tf.classList.remove("invalid"); }
+      }
+    };
+    var renderFiles = function () {
+      $("#f-files-list").innerHTML = pickedFiles.map(function (f, i) {
+        return '<li><span>' + esc(f.name) + ' <small>' + esc(prettySize(f.size)) + '</small></span><button type="button" class="file-x" data-rm="' + i + '" aria-label="Remove ' + esc(f.name) + '">✕</button></li>';
+      }).join("");
+      syncRefs();
+    };
+    hasChar.addEventListener("change", syncRefs);
+    fFiles.addEventListener("change", function () {
+      var skipped = [];
+      Array.prototype.forEach.call(fFiles.files || [], function (f) {
+        if (pickedFiles.length >= MAX_FILES) { skipped.push(f.name + " (10 files max)"); return; }
+        if (FILE_TYPES.indexOf(f.type) < 0) { skipped.push(f.name + " (not a picture or PDF)"); return; }
+        if (f.size > MAX_BYTES) { skipped.push(f.name + " (over 25 MB)"); return; }
+        pickedFiles.push(f);
+      });
+      fFiles.value = "";
+      renderFiles();
+      if (skipped.length) toast("Skipped: " + skipped.join(", "));
+    });
+    $("#f-files-list").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-rm]"); if (!b) return;
+      pickedFiles.splice(Number(b.getAttribute("data-rm")), 1);
+      renderFiles();
+    });
+    syncRefs();
+
+    // Upload the picked files into the new request's private thread (via the portal function).
+    var portal = function (body) {
+      return fetch(BK.url + "/functions/v1/portal", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+      }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) throw new Error(j.error || "Upload failed");
+        return j;
+      }); });
+    };
+    var uploadFiles = function (token, files, onStep) {
+      var paths = [], failed = [];
+      return files.reduce(function (chain, f, i) {
+        return chain.then(function () {
+          onStep(i + 1, files.length);
+          return portal({ token: token, action: "upload", name: f.name, type: f.type, size: f.size }).then(function (u) {
+            var u2 = null; try { u2 = new URL(u.url); } catch (e) {}
+            if (!u2 || u2.origin !== BK.url) throw new Error("bad upload link");
+            var fd = new FormData(); fd.append("cacheControl", "3600"); fd.append("", f);
+            return fetch(u2.toString(), { method: "PUT", headers: { "x-upsert": "false" }, body: fd }).then(function (r) {
+              if (!r.ok) throw new Error("upload " + r.status);
+              paths.push(u.path);
+            });
+          }).catch(function () { failed.push(f.name); });
+        });
+      }, Promise.resolve()).then(function () {
+        if (!paths.length) return failed;
+        return portal({ token: token, action: "send", body: "📎 Character references from my request", files: paths })
+          .then(function () { return failed; }, function () { return files.map(function (f) { return f.name; }); });
+      });
+    };
     var contactValues = function () {
       var v = via.value;
       return {
@@ -810,6 +888,8 @@
         if (wrap) wrap.classList.toggle("invalid", bad);
         if (bad && !firstBad) firstBad = el;
       });
+      syncRefs();
+      if (fRefs.required && !fRefs.value.trim()) { $("#fld-refs").classList.add("invalid"); if (!firstBad) firstBad = fRefs; }
       var cv = contactValues();
       if (!firstBad && cv.email && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(cv.email)) { $("#fld-email").classList.add("invalid"); firstBad = fEmail; }
       if (!firstBad && cv.discord && !/^[a-z0-9_.]{2,32}$/.test(cv.discord)) { $("#fld-discord").classList.add("invalid"); firstBad = fDiscord; }
@@ -824,20 +904,29 @@
         var val = function (id) { return ($(id).value || "").trim(); };
         btn.disabled = true; btn.textContent = "Sending…";
         var sentTo = cv.email && cv.discord ? "by email and Discord DM" : cv.email ? "by email" : "by Discord DM";
-        rpc("submit_request2", {
+        var filesToSend = pickedFiles.slice();
+        rpc("submit_request3", {
           p_name: val("#f-name"), p_email: cv.email, p_discord: cv.discord, p_type: val("#f-type"),
           p_character: val("#f-char"), p_refs: val("#f-refs"), p_description: val("#f-desc"),
           p_deadline: val("#f-deadline") || null, p_privacy: val("#f-privacy"),
           p_nsfw: mature.checked, p_adult: $("#f-adult").checked,
-          p_quote: attachedQuote ? attachedQuote.full : ""
+          p_quote: attachedQuote ? attachedQuote.full : "", p_has_character: hasChar.value
         }).then(function (res) {
+          var tok0 = String((res && res.token) || "");
+          if (!filesToSend.length || !/^[0-9a-f]{36}$/.test(tok0)) return { res: res, failed: [] };
+          return uploadFiles(tok0, filesToSend, function (i, n) { btn.textContent = "Uploading picture " + i + " of " + n + "…"; })
+            .then(function (failed) { return { res: res, failed: failed }; });
+        }).then(function (out) {
+          var res = out.res, failedFiles = out.failed;
           var code = String((res && res.code) || "");
           var tok = String((res && res.token) || "");
           var link = /^[0-9a-f]{36}$/.test(tok) ? location.origin + location.pathname.replace(/[^/]*$/, "") + "request.html?t=" + tok : "";
           store(DRAFT_KEY, null);
           form.reset(); attachedQuote = null; applyQuote(); syncMature(); syncVia();
+          pickedFiles = []; renderFiles();
           openModal("Request sent! ♡",
             "<p>Thank you so much! Jamzie will look over your request. You'll get updates " + sentTo + ": when it's accepted (with your price and a pay link), when it's paid, and as it's finished.</p>" +
+            (failedFiles.length ? '<p style="color:#e23b62;font-weight:700">' + esc(failedFiles.length + " picture" + (failedFiles.length > 1 ? "s" : "") + " didn't upload (" + failedFiles.join(", ") + "). You can add them on your request page.") + "</p>" : "") +
             (link ? '<p><strong>Your private request page:</strong> check your status and pay there anytime. Bookmark it!</p><pre id="m-link">' + esc(link) + "</pre>" : "") +
             '<p>Request code: <strong class="req-code">' + esc(code) + "</strong></p>" +
             "<p><strong>Please don't send any payment until your commission is accepted.</strong></p>" +
