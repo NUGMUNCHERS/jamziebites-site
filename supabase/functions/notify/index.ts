@@ -47,7 +47,7 @@ function message(kind: string, r: Req) {
     },
     paid: {
       subject: `Payment received, thank you! ♡ (${r.code})`,
-      lines: [`Hi ${r.name}! I got your payment of ${money(r.paid_amount)} for your ${piece}. Your slot is locked in! 🎉`,
+      lines: [`Hi ${r.name}! I got your payment of ${money(Number(r.paid_amount) > 0 ? r.paid_amount : r.price)} for your ${piece}. Your slot is locked in! 🎉`,
         `You can watch it move from sketch to finished piece on your request page anytime.`],
       button: "Follow my commission",
     },

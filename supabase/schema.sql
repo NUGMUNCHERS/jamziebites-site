@@ -342,7 +342,9 @@ language plpgsql security definer set search_path = '' as $$
 declare v_kind text;
 begin
   if tg_op = 'INSERT' then
-    v_kind := 'received';
+    -- Normally 'new' (from the website). Jamzie adding an already-paid commission gets the matching message.
+    v_kind := case new.status when 'new' then 'received' when 'accepted' then 'accepted' when 'paid' then 'paid'
+                when 'in_progress' then 'started' when 'done' then 'done' else null end;
   elsif new.status is distinct from old.status then
     v_kind := case new.status when 'accepted' then 'accepted' when 'paid' then 'paid'
                 when 'in_progress' then 'started' when 'done' then 'done' when 'declined' then 'declined' end;
