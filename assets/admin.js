@@ -48,6 +48,15 @@
 
   if (!B.url || !B.key || !window.supabase || location.protocol === "file:") { show("v-config"); return; }
 
+  // Never accept a password on an insecure page (a tampered http:// page could steal it).
+  var isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  if (location.protocol !== "https:" && !isLocal) {
+    show("v-config");
+    $("v-config").querySelector("h1").textContent = "Secure connection required 🔒";
+    $("v-config").querySelector("p").textContent = "The studio only works over https://. Please open https://jamziebites.com/admin.html instead. (If that shows a warning, the site's security certificate isn't ready yet — wait and try again later.)";
+    return;
+  }
+
   var sb = window.supabase.createClient(B.url, B.key, {
     auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
   });
