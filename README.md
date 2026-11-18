@@ -61,7 +61,14 @@ If the form ever fails to send, the site falls back to the copy-paste message, s
 **What you can do there:**
 
 - **Requests:** everything clients send from the site lands here, sorted into New, Awaiting payment, In progress, Done and Declined. The browser tab shows how many are new.
-- **Accept:** type the final price, then click **Accept + copy message**. A ready-to-paste message (with their request code and the pay link) is copied for you. Send it to the client.
+- **Accept:** type the final price, then click **Accept**. The client is automatically sent their price and a **Pay** button by email and/or Discord DM. Nothing to copy or paste.
+- **Clients don't need accounts or codes.** Every request gets a private page, `jamziebites.com/request.html?t=…`. It shows their status and progress, and once accepted, a Pay button for the exact amount owed. The link is shown when they submit and is included in every message. Open a request in the studio to copy it.
+- **Automatic messages:**
+  - Clients choose email, Discord, or both on the form.
+  - They hear from you automatically when their request is received, accepted (with pay link), paid, started (status → In progress), finished (Done) or declined.
+  - Each request's **Messages** section shows what was sent. Anything that didn't go through gets a ✉️ "not delivered" badge and a **Send again** button.
+  - Discord DMs only reach people who are in your Discord server. The bot keeps retrying for 48 hours in case they join late.
+  - You can fix a client's email/Discord in the request and click Save.
 - **Payments are automatic.** Clients pay on the Pay page using their request code. The moment Stripe confirms a payment, the studio does the rest:
   - If the amount covers the price, the request is marked **Paid** and joins the public queue. You don't click anything.
   - A **💳 New payment** box appears at the top of the studio, and the browser tab shows (💳1).
@@ -80,6 +87,18 @@ If the form ever fails to send, the site falls back to the copy-paste message, s
 - Reading or changing requests needs your account *and* your 2FA code. The database itself enforces this, not just the web page.
 - Public sign-ups are disabled.
 - The database setup is saved in `supabase/schema.sql`.
+
+**How client messages and checkout work:**
+
+- **`checkout` Edge Function:** builds a Stripe Checkout for exactly what's owed, using the price from the database, never from the browser. It also handles tips ($1–$1,000, no code).
+  - It needs the Supabase secret `STRIPE_SECRET_KEY`: a Stripe *restricted* key with only "Checkout Sessions: Write".
+  - Without that key it falls back to the plain Payment Link, and the client types the amount.
+- **Message queue:** status changes queue messages in the `notifications` table (`supabase/schema.sql`), and the database wakes the `notify` Edge Function right away. A once-a-minute timer retries anything still waiting.
+- **`notify` Edge Function secrets:**
+  - Email: `RESEND_API_KEY` (resend.com, sending from hello@jamziebites.com) and `NOTIFY_REPLY_TO` (the inbox where client replies go).
+  - Discord: `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID` (her server's ID). The bot needs the "Server Members Intent" turned on.
+  - After adding the bot token, open `…/functions/v1/notify?connect=1` once.
+- **Discord invite:** put the server invite link in `config.js` → `contact.discordInvite`. The form then tells Discord clients to join.
 
 **How automatic payments work:**
 

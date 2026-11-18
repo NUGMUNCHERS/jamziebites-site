@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Your Commission · JamzieBites</title>
+  <meta name="description" content="Your private JamzieBites commission page: status, progress and payment.">
+  <meta name="robots" content="noindex, noai, noimageai">
+  <meta name="theme-color" content="#ff8fc4">
+  
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/theme-init.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" id="top">
+    <nav class="container nav" aria-label="Main">
+      <a class="logo" href="index.html" aria-label="JamzieBites home">
+        <img class="logo-mark" src="assets/logo.svg" alt="" width="38" height="38">
+        <span class="logo-word">Jamzie<span class="grad-text">Bites</span></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#prices">Prices</a></li>
+        <li><a href="index.html#quote">Quote</a></li>
+        <li><a href="index.html#faq">FAQ</a></li>
+        <li><a href="tos.html">Terms</a></li>
+        <li><a href="pay.html">Pay</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn btn-primary btn-sm" href="index.html#request">Request ♡</a>
+        <button class="icon-btn theme-toggle" type="button" aria-label="Switch light / dark theme">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+        </button>
+        <button class="icon-btn menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <canvas id="sky" aria-hidden="true"></canvas>
+      <div class="container" style="position:relative">
+        <div class="eyebrow">your private request page</div>
+        <h1>Your <span class="grad-text">commission</span></h1>
+        <p id="r-lead">Loading your request…</p>
+      </div>
+      <div class="hero-clouds" aria-hidden="true">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path fill="currentColor" d="M0 80c60-30 120-40 180-20s100 10 150-15 120-30 170 0 90 40 160 25 110-45 180-40 110 35 170 30 100-35 170-40 110 20 140 30 70 15 120 10V120H0z"/></svg>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:30px">
+      <div class="container req-wrap">
+        <div class="card req-banner" id="r-paid-banner" hidden>
+          <div class="big-emoji" aria-hidden="true">🍓✨</div>
+          <h2>Payment received, thank you! ♡</h2>
+          <p>Stripe has emailed you a receipt. Your slot is locked in, and this page updates as your piece comes to life.</p>
+        </div>
+
+        <div class="card req-card" id="r-card" hidden>
+          <div class="req-head">
+            <div>
+              <h2 id="r-title">Request</h2>
+              <p class="req-meta" id="r-meta"></p>
+            </div>
+            <span class="req-status" id="r-status"></span>
+          </div>
+
+          <ol class="req-steps" id="r-steps" aria-label="Progress"></ol>
+          <p class="req-note" id="r-note"></p>
+
+          <div class="req-pay" id="r-pay" hidden>
+            <div class="req-price"><span>Final price</span><b id="r-price">$0</b></div>
+            <button class="btn btn-primary pay-btn" type="button" id="r-paybtn">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              <span id="r-paylabel">Pay now</span>
+            </button>
+            <p class="pay-fine">Card, Apple Pay, Google Pay, Cash App Pay or Klarna, all through <strong>Stripe</strong>. This site never sees your card details. By paying you agree to the <a href="tos.html" target="_blank" rel="noopener">Terms of Service</a>.</p>
+            <p class="pay-fine req-err" id="r-payerr" role="alert"></p>
+          </div>
+
+          <p class="pay-fine req-foot">🔖 <strong>Bookmark this page.</strong> It's your private link, so please don't share it. <span id="r-via"></span></p>
+        </div>
+
+        <div class="card req-card req-missing" id="r-missing" hidden>
+          <div class="big-emoji" aria-hidden="true">🔍</div>
+          <h2>We couldn't find that request</h2>
+          <p>Double-check the link from your email or Discord message. If you still can't find it, message Jamzie with your request code (it looks like <span class="req-code">JB-1A2B3C</span>).</p>
+          <a class="btn btn-primary" href="pay.html">Go to the Pay page</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-clouds" aria-hidden="true">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="currentColor" d="M0 50c60-20 120-26 180-12s100 6 150-10 120-20 170 0 90 26 160 16 110-30 180-26 110 22 170 20 100-22 170-26 110 12 140 20 70 10 120 6V80H0z"/></svg>
+    </div>
+    <div class="container">
+      <div class="footer-bottom" style="margin-top:0">
+        <span>© <span id="year">2026</span> JamzieBites — All Rights Reserved.</span>
+        <span class="pills"><a href="index.html">Home</a><a href="tos.html">Terms</a><a href="index.html#faq">FAQ</a></span>
+      </div>
+      <div class="socials" id="socials" style="justify-content:center;margin-top:18px"></div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/main.js"></script>
+  <script src="assets/request.js"></script>
+</body>
+</html>

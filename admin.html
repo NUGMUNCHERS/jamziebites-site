@@ -176,12 +176,14 @@
           </select>
         </div>
         <div class="field"><label for="d-qname">Name shown in public queue</label><input class="input" id="d-qname" maxlength="60"></div>
+        <div class="field"><label for="d-email">Client email (automatic emails)</label><input class="input" id="d-email" type="email" maxlength="254" placeholder="none"></div>
+        <div class="field"><label for="d-discord">Client Discord username (bot DMs)</label><input class="input" id="d-discord" maxlength="33" autocapitalize="off" spellcheck="false" placeholder="none"></div>
         <label class="check adm-span"><input type="checkbox" id="d-show"> Show this commission in the public queue</label>
         <div class="field adm-span"><label for="d-notes">Private notes (only you see these)</label><textarea class="input" id="d-notes" maxlength="6000" style="min-height:90px"></textarea></div>
       </div>
       <div class="adm-actions">
         <button class="btn btn-primary" type="submit">Save changes</button>
-        <button class="btn" type="button" id="d-accept">✓ Accept + copy message</button>
+        <button class="btn" type="button" id="d-accept">✓ Accept (sends price + pay link)</button>
         <button class="btn" type="button" id="d-paid">💳 Mark paid</button>
         <button class="btn" type="button" id="d-decline">Decline</button>
         <button class="btn adm-danger" type="button" id="d-delete">Delete</button>

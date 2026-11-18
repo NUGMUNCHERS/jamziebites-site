@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://babujgeapxhrcrrrxoet.supabase.co https://formspree.io; form-action 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; manifest-src 'self'; worker-src 'none'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>Pay for Your Commission · JamzieBites</title>
+  <title>Pay &amp; Tips · JamzieBites</title>
   <meta name="description" content="Pay for an accepted JamzieBites commission securely with Stripe — cards, Apple Pay and Google Pay.">
   <meta name="robots" content="noindex, noai, noimageai">
   <meta name="theme-color" content="#ff8fc4">
@@ -52,8 +52,8 @@
       <canvas id="sky" aria-hidden="true"></canvas>
       <div class="container" style="position:relative">
         <div class="eyebrow">secure checkout</div>
-        <h1>Pay for your <span class="grad-text">commission</span></h1>
-        <p>Your commission was accepted? Yay! ♡ Pay your quoted price here to lock in your slot.</p>
+        <h1>Pay &amp; <span class="grad-text">tips</span></h1>
+        <p>Pay for an accepted commission, or send a little tip. ♡</p>
       </div>
       <div class="hero-clouds" aria-hidden="true">
         <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path fill="currentColor" d="M0 80c60-30 120-40 180-20s100 10 150-15 120-30 170 0 90 40 160 25 110-45 180-40 110 35 170 30 100-35 170-40 110 20 140 30 70 15 120 10V120H0z"/></svg>
@@ -65,40 +65,44 @@
 
         <div class="card pay-thanks" id="pay-thanks" hidden>
           <div class="big-emoji" aria-hidden="true">🍓✨</div>
-          <h2>Payment received — thank you! ♡</h2>
-          <p>Stripe has emailed you a receipt. Your slot is now secured, and I'll start on your sketch soon. Keep an eye on the <a href="index.html#queue">queue</a> to watch your piece move along!</p>
+          <h2 id="thanks-title">Payment received, thank you! ♡</h2>
+          <p id="thanks-text">Stripe has emailed you a receipt. Your slot is locked in, and you'll get a message as your piece moves along.</p>
           <a class="btn btn-primary" href="index.html">Back to the site</a>
         </div>
-
-        <div class="test-banner" id="test-banner" hidden>
-          <strong>🧪 Test mode:</strong> payments are not live yet — no real money will be charged. Please don't try to pay for a real commission until this banner is gone.
-        </div>
-
         <div class="pay-grid" id="pay-main">
-          <ol class="card pay-steps">
-            <li><b>Your request is accepted</b><span>Jamzie confirms your commission and tells you your <strong>final price</strong>. Please don't pay before this!</span></li>
-            <li><b>Pay your quoted amount</b><span>Click the button, type in the exact amount you were quoted, and pay by card, Apple Pay or Google Pay.</span></li>
-            <li><b>Your slot is secured</b><span>You'll get an emailed receipt, and work begins. Full payment up front, as per the <a href="tos.html#payment">Terms</a>.</span></li>
-          </ol>
-
           <form class="card pay-form" id="pay-form" novalidate>
-            <h2 style="font-size:1.6rem">✦ Pay now</h2>
+            <h2 style="font-size:1.6rem">✦ Pay for a commission</h2>
+            <p class="pay-lead">Once your commission is accepted, you'll get a message with your <strong>private request link</strong>. It has a Pay button with your exact price, so that's the easiest way to pay.</p>
+            <p class="pay-or">Lost the link? Use your request code:</p>
             <div class="field">
-              <label for="p-user">Your request code <span class="req" style="color:var(--pink-deep)">*</span></label>
+              <label for="p-user">Your request code</label>
               <input class="input" id="p-user" autocomplete="off" placeholder="e.g. JB-1A2B3C" maxlength="9" required style="text-transform:uppercase;letter-spacing:.08em">
-              <span class="help">It's in your acceptance message (and shown when you sent your request).</span>
-              <span class="err">Enter your request code — it looks like JB-1A2B3C.</span>
-            </div>
-            <div class="agree" style="margin-top:16px">
-              <label class="check"><input type="checkbox" id="p-accepted" required> My commission has been accepted and I know my final price.</label>
-              <label class="check"><input type="checkbox" id="p-tos" required> I agree to the <a href="tos.html" target="_blank" rel="noopener">Terms of Service</a>.</label>
+              <span class="err">Enter your request code. It looks like JB-1A2B3C.</span>
             </div>
             <button class="btn btn-primary pay-btn" type="submit" id="p-go">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-              Continue to secure payment
+              <span id="p-go-label">Continue to secure payment</span>
             </button>
-            <p class="pay-fine">Payments are processed by <strong>Stripe</strong>. Your card details go straight to Stripe — this website never sees or stores them.</p>
-            <p class="pay-fine" id="pay-unavailable" hidden style="color:#e23b62">Online payment isn't set up yet — Jamzie will send you payment details directly.</p>
+            <p class="pay-fine req-err" id="p-err" role="alert"></p>
+            <p class="pay-fine">Your price is filled in automatically. Payments go through <strong>Stripe</strong>, and this site never sees your card. By paying you agree to the <a href="tos.html" target="_blank" rel="noopener">Terms of Service</a>.</p>
+          </form>
+          <form class="card pay-form" id="tip-form" novalidate>
+            <h2 style="font-size:1.6rem">💝 Send a tip</h2>
+            <p class="pay-lead">Want to support my art? Tips of any size mean the world. No commission or code needed!</p>
+            <div class="tip-amounts" id="tip-amounts">
+              <button type="button" data-amt="5">$5</button>
+              <button type="button" data-amt="10" aria-pressed="true">$10</button>
+              <button type="button" data-amt="20">$20</button>
+              <button type="button" data-amt="50">$50</button>
+            </div>
+            <div class="field">
+              <label for="tip-amt">Or choose your own amount</label>
+              <div class="tip-custom"><span aria-hidden="true">$</span><input class="input" id="tip-amt" type="number" min="1" max="1000" step="1" value="10" inputmode="decimal"></div>
+              <span class="err">Tips can be $1 to $1,000.</span>
+            </div>
+            <button class="btn btn-primary pay-btn" type="submit" id="tip-go"><span id="tip-label">Tip $10 ♡</span></button>
+            <p class="pay-fine req-err" id="tip-err" role="alert"></p>
+            <p class="pay-fine">Card, Apple Pay, Google Pay and more, through Stripe.</p>
           </form>
         </div>
       </div>

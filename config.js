@@ -26,6 +26,7 @@ window.JAMZIE = {
      form instead builds a tidy message clients can copy into a Discord DM.  */
   contact: {
     discord: "",          // e.g. "jamziebites"
+    discordInvite: "",    // her server invite, e.g. "https://discord.gg/abc123". Clients join so the bot can DM them.
     email: "",            // e.g. "hello@jamziebites.com"
     formEndpoint: ""      // e.g. "https://formspree.io/f/abcd1234"
   },

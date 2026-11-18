@@ -685,6 +685,36 @@
       }
     } catch (e) {}
 
+    // "How should I reach you?" -> email and/or Discord fields
+    var via = $("#f-via"), fEmail = $("#f-email"), fDiscord = $("#f-discord");
+    var invite = /^https:\/\/(discord\.gg|discord\.com\/invite)\/[A-Za-z0-9-]+$/.test(contact.discordInvite || "") ? contact.discordInvite : "";
+    if (invite) {
+      $("#contact-lines").innerHTML += '<div class="contact-line">' + icon("discord") + '<a href="' + esc(invite) + '" target="_blank" rel="noopener">Join my Discord server</a></div>';
+      $("#dc-help").innerHTML = "Your <strong>username</strong> (lowercase), not your display name. Please <a href=\"" + esc(invite) +
+        "\" target=\"_blank\" rel=\"noopener\">join my Discord server</a> so my bot can message you!";
+    }
+    var syncVia = function () {
+      var v = via.value;
+      var useEmail = v !== "discord", useDiscord = v !== "email";
+      $("#fld-email").hidden = !useEmail; fEmail.required = useEmail;
+      $("#fld-discord").hidden = !useDiscord; fDiscord.required = useDiscord;
+      if (!useEmail) $("#fld-email").classList.remove("invalid");
+      if (!useDiscord) $("#fld-discord").classList.remove("invalid");
+    };
+    via.addEventListener("change", syncVia);
+    syncVia();
+    var contactValues = function () {
+      var v = via.value;
+      return {
+        email: v !== "discord" ? fEmail.value.trim() : "",
+        discord: v !== "email" ? fDiscord.value.trim().replace(/^@+/, "").toLowerCase() : ""
+      };
+    };
+    var contactText = function () {
+      var c = contactValues();
+      return [c.email && "Email: " + c.email, c.discord && "Discord: " + c.discord].filter(Boolean).join(" · ");
+    };
+
     var mature = $("#f-mature"), adultRow = $("#agree-adult"), adultBox = $("#f-adult");
     var syncMature = function () {
       adultRow.hidden = !mature.checked;
@@ -709,7 +739,7 @@
         "✦ JamzieBites Commission Request ✦",
         "",
         "Name: " + v("#f-name"),
-        "Contact: " + v("#f-contact"),
+        "Contact: " + contactText(),
         "Type: " + v("#f-type"),
         "Character(s): " + (v("#f-char") || "—")
       ];
@@ -780,6 +810,9 @@
         if (wrap) wrap.classList.toggle("invalid", bad);
         if (bad && !firstBad) firstBad = el;
       });
+      var cv = contactValues();
+      if (!firstBad && cv.email && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(cv.email)) { $("#fld-email").classList.add("invalid"); firstBad = fEmail; }
+      if (!firstBad && cv.discord && !/^[a-z0-9_.]{2,32}$/.test(cv.discord)) { $("#fld-discord").classList.add("invalid"); firstBad = fDiscord; }
       if (firstBad) { firstBad.focus(); toast("Almost! Please fill in the highlighted bits ♡"); return; }
 
       var msg = buildMessage();
@@ -790,22 +823,27 @@
       if (backendOk()) {
         var val = function (id) { return ($(id).value || "").trim(); };
         btn.disabled = true; btn.textContent = "Sending…";
-        rpc("submit_request", {
-          p_name: val("#f-name"), p_contact: val("#f-contact"), p_type: val("#f-type"),
+        var sentTo = cv.email && cv.discord ? "by email and Discord DM" : cv.email ? "by email" : "by Discord DM";
+        rpc("submit_request2", {
+          p_name: val("#f-name"), p_email: cv.email, p_discord: cv.discord, p_type: val("#f-type"),
           p_character: val("#f-char"), p_refs: val("#f-refs"), p_description: val("#f-desc"),
           p_deadline: val("#f-deadline") || null, p_privacy: val("#f-privacy"),
           p_nsfw: mature.checked, p_adult: $("#f-adult").checked,
           p_quote: attachedQuote ? attachedQuote.full : ""
-        }).then(function (code) {
-          code = String(code || "");
+        }).then(function (res) {
+          var code = String((res && res.code) || "");
+          var tok = String((res && res.token) || "");
+          var link = /^[0-9a-f]{36}$/.test(tok) ? location.origin + location.pathname.replace(/[^/]*$/, "") + "request.html?t=" + tok : "";
           store(DRAFT_KEY, null);
-          form.reset(); attachedQuote = null; applyQuote(); syncMature();
+          form.reset(); attachedQuote = null; applyQuote(); syncMature(); syncVia();
           openModal("Request sent! ♡",
-            "<p>Thank you so much! Jamzie will look over your request and reply at the contact you gave.</p>" +
-            '<p>Your request code is <strong class="req-code">' + esc(code) + "</strong>. Save it — you'll need it if your commission is accepted and you pay.</p>" +
+            "<p>Thank you so much! Jamzie will look over your request. You'll get updates " + sentTo + ": when it's accepted (with your price and a pay link), when it's paid, and as it's finished.</p>" +
+            (link ? '<p><strong>Your private request page:</strong> check your status and pay there anytime. Bookmark it!</p><pre id="m-link">' + esc(link) + "</pre>" : "") +
+            '<p>Request code: <strong class="req-code">' + esc(code) + "</strong></p>" +
             "<p><strong>Please don't send any payment until your commission is accepted.</strong></p>" +
-            '<div class="modal-actions"><button class="btn btn-primary" type="button" id="m-copy-code">Copy my code</button></div>');
-          $("#m-copy-code").addEventListener("click", function () { copy(code, "Code copied ✓"); });
+            '<div class="modal-actions">' + (link ? '<a class="btn btn-primary" href="' + esc(link) + '">Open my request page</a><button class="btn" type="button" id="m-copy-link">Copy link</button>' : '<button class="btn btn-primary" type="button" id="m-copy-code">Copy my code</button>') + "</div>");
+          if ($("#m-copy-link")) $("#m-copy-link").addEventListener("click", function () { copy(link, "Link copied ✓"); });
+          if ($("#m-copy-code")) $("#m-copy-code").addEventListener("click", function () { copy(code, "Code copied ✓"); });
         }).catch(function (err) {
           showCopyModal(msg, "The request couldn't be sent (" + (err && err.message ? err.message : "network error") + "). Here it is so nothing is lost — you can send it to Jamzie directly.");
         }).then(resetBtn);
@@ -816,7 +854,7 @@
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
             _subject: "Commission request — " + $("#f-name").value,
-            name: $("#f-name").value, contact: $("#f-contact").value, type: $("#f-type").value,
+            name: $("#f-name").value, contact: contactText(), type: $("#f-type").value,
             message: msg, _gotcha: ""
           })
         }).then(function (r) {

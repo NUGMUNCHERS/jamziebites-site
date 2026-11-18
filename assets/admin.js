@@ -185,11 +185,13 @@
   async function load() {
     var both = await Promise.all([
       sb.from("requests").select("*").order("created_at", { ascending: false }).limit(1000),
-      sb.from("payments").select("*").order("created_at", { ascending: false }).limit(200)
+      sb.from("payments").select("*").order("created_at", { ascending: false }).limit(200),
+      sb.from("notifications").select("*").order("created_at", { ascending: true }).limit(3000)
     ]);
-    var r = both[0], p = both[1];
+    var r = both[0], p = both[1], n = both[2];
     if (r.error) { toast("Couldn't load requests: " + r.error.message); return; }
     data = r.data || [];
+    if (!n.error) notes = n.data || [];
     if (!p.error) {
       var fresh = (p.data || []).filter(function (x) { return !x.seen && x.state !== "processing" && !seenIds[x.id]; });
       if (paymentsLoaded && fresh.length) toast("💳 New payment from " + (fresh[0].customer_name || "a client") + " — " + money(fresh[0].amount));
@@ -202,7 +204,12 @@
   }
 
   /* ---------- Payments (written by the Stripe webhook, never by this page) ---------- */
-  var payments = [], paymentsLoaded = false, seenIds = {};
+  var payments = [], paymentsLoaded = false, seenIds = {}, notes = [];
+  var SITE = "https://jamziebites.com";
+  function privateLink(r) { return r && /^[0-9a-f]{36}$/.test(r.token || "") ? SITE + "/request.html?t=" + r.token : ""; }
+  var NOTE_KIND = { received: "Got your request", accepted: "Accepted + pay link", paid: "Payment received", started: "Work started", done: "Finished", declined: "Declined" };
+  function notesFor(id) { return notes.filter(function (x) { return x.request_id === id; }); }
+  function failedNotes(id) { return notesFor(id).filter(function (x) { return x.status === "failed" || (x.status === "pending" && x.attempts > 1); }); }
   var PAY_STATE = {
     ok: ["✅", "Paid"],
     attention: ["⚠️", "Needs a look"],
@@ -219,7 +226,7 @@
       '</b> from ' + esc(who) + ' <span class="adm-pill pay-pill-' + esc(x.state) + '">' + esc(st[1]) + '</span>' +
       '<small>' + esc(when(x.created_at)) +
       (req ? ' · for <button type="button" class="adm-linkbtn" data-open="' + esc(req.id) + '">' + esc(req.name) + " · " + esc(req.code) + "</button>"
-           : (x.code_given ? " · code given: " + esc(x.code_given) : " · no request code")) +
+           : /^TIP\b/i.test(x.code_given || "") ? " · 💝 tip" : (x.code_given ? " · code given: " + esc(x.code_given) : " · no request code")) +
       (x.customer_email && x.customer_name ? " · " + esc(x.customer_email) : "") + '</small>' +
       (x.note ? '<small class="adm-pay-note">' + esc(x.note) + "</small>" : "") + '</div>' +
       (withButton ? '<button type="button" class="btn btn-sm" data-seen="' + esc(x.id) + '">Got it</button>' : "") +
@@ -275,13 +282,14 @@
 
     var rows = data.filter(GROUPS[filter]).filter(function (r) {
       if (!q) return true;
-      return [r.code, r.name, r.contact, r.type, r.character_name].join(" ").toLowerCase().indexOf(q) > -1;
+      return [r.code, r.name, r.contact, r.email, r.discord, r.type, r.character_name].join(" ").toLowerCase().indexOf(q) > -1;
     });
     if (!rows.length) { $("list").innerHTML = '<div class="card adm-empty">Nothing here yet ✨</div>'; return; }
     $("list").innerHTML = rows.map(function (r) {
       return '<button type="button" class="card adm-row" data-id="' + esc(r.id) + '">' +
         '<span class="adm-row-main"><b>' + esc(r.name) + '</b> <span class="adm-code-pill">' + esc(r.code) + '</span>' +
         (r.nsfw ? ' <span class="adm-pill adm-nsfw">18+</span>' : "") +
+        (failedNotes(r.id).length ? ' <span class="adm-pill adm-msgfail" title="A message to this client hasn&#39;t gone through">✉️ not delivered</span>' : "") +
         '<small>' + esc(r.type) + (r.character_name ? " · " + esc(r.character_name) : "") + " · " + esc(when(r.created_at)) + '</small></span>' +
         '<span class="adm-row-side"><span class="adm-pill st-' + esc(r.status) + '">' + esc(STATUS_LABEL[r.status] || r.status) + '</span>' +
         '<small>' + money(r.price) + (/^(paid|in_progress)$/.test(r.status) ? " · " + esc(STAGE_LABEL[r.stage]) : "") + '</small></span></button>';
@@ -325,7 +333,12 @@
     $("d-title").textContent = r.name + " · " + r.code;
     $("d-sub").textContent = "Received " + when(r.created_at) + (r.updated_at !== r.created_at ? " · updated " + when(r.updated_at) : "");
     $("d-body").innerHTML =
-      field("Contact", esc(r.contact)) +
+      field("Contact", (r.email ? '✉️ <a href="mailto:' + esc(r.email) + '">' + esc(r.email) + "</a>" : "") +
+        (r.email && r.discord ? "<br>" : "") + (r.discord ? "💬 Discord: <b>" + esc(r.discord) + "</b>" : "") +
+        (!r.email && !r.discord ? esc(r.contact) + ' <small class="adm-muted">(no email/Discord on file, so no automatic messages)</small>' : "")) +
+      field("Client's page", privateLink(r) ? '<button type="button" class="btn btn-sm" data-copy-link>Copy private link</button> <a class="btn btn-sm" href="' +
+        esc(privateLink(r)) + '" target="_blank" rel="noopener noreferrer">Open</a><br><small class="adm-muted">Their status page with a Pay button. It is sent to them automatically.</small>' : "") +
+      '<div id="d-msgs"></div>' +
       field("Type", esc(r.type) + (r.nsfw ? ' <span class="adm-pill adm-nsfw">NSFW · 18+ confirmed</span>' : "")) +
       field("Character", esc(r.character_name)) +
       field("References", linkify(r.refs)) +
@@ -343,7 +356,10 @@
       })()) +
       field("Deadline", esc(r.deadline)) +
       field("Privacy", esc(r.privacy));
+    renderMsgs();
     $("d-status").value = r.status;
+    $("d-email").value = r.email || "";
+    $("d-discord").value = r.discord || "";
     $("d-price").value = r.price == null ? "" : r.price;
     $("d-stage").value = r.stage;
     $("d-qname").value = r.queue_name || "";
@@ -355,6 +371,30 @@
     document.body.style.overflow = "hidden";
     $("d-close").focus();
   }
+  function renderMsgs() {
+    if (!current || !$("d-msgs")) return;
+    var mine = notesFor(current.id);
+    $("d-msgs").innerHTML = field("Messages", mine.length ? mine.map(function (x) {
+      var ico = x.status === "sent" ? "✅" : x.status === "failed" ? "❌" : "⏳";
+      return '<div class="adm-msg">' + ico + " <b>" + esc(NOTE_KIND[x.kind] || x.kind) + "</b> · " + (x.channel === "email" ? "email" : "Discord") +
+        " · " + esc(when(x.sent_at || x.created_at)) +
+        (x.status !== "sent" && x.last_error ? '<br><small class="adm-muted">' + esc(x.last_error) + "</small>" : "") +
+        (x.status === "failed" ? ' <button type="button" class="btn btn-sm" data-resend="' + esc(x.id) + '">Send again</button>' : "") + "</div>";
+    }).join("") : (current.email || current.discord ? '<small class="adm-muted">Nothing yet.</small>' : ""));
+  }
+  async function reloadNotes() {
+    var n = await sb.from("notifications").select("*").order("created_at", { ascending: true }).limit(3000);
+    if (!n.error) { notes = n.data || []; renderMsgs(); render(); }
+  }
+  $("d-body").addEventListener("click", async function (e) {
+    if (e.target.closest("[data-copy-link]") && current) { copy(privateLink(current), "Private link copied ✓"); return; }
+    var b = e.target.closest("[data-resend]");
+    if (!b) return;
+    b.disabled = true;
+    var r = await sb.from("notifications").update({ status: "pending", next_try_at: new Date().toISOString(), attempts: 0 }).eq("id", b.getAttribute("data-resend")).select();
+    toast(r.error || !r.data || !r.data.length ? "Couldn't resend." : "Sending again within a minute ✓");
+    setTimeout(reloadNotes, 1500);
+  });
   function closeDrawer() { $("drawer").hidden = true; $("drawer-bg").hidden = true; document.body.style.overflow = ""; current = null; }
   $("list").addEventListener("click", function (e) { var b = e.target.closest(".adm-row"); if (b) openDrawer(b.getAttribute("data-id")); });
   $("d-close").addEventListener("click", closeDrawer);
@@ -371,6 +411,7 @@
     current = updated;
     render();
     toast(okMsg || "Saved ✓");
+    setTimeout(reloadNotes, 2500); setTimeout(reloadNotes, 8000);
     return true;
   }
   function formPatch() {
@@ -381,7 +422,9 @@
       stage: $("d-stage").value,
       queue_name: $("d-qname").value.trim().slice(0, 60) || "Anonymous",
       show_in_queue: $("d-show").checked,
-      admin_notes: $("d-notes").value.slice(0, 6000) || null
+      admin_notes: $("d-notes").value.slice(0, 6000) || null,
+      email: $("d-email").value.trim().toLowerCase() || null,
+      discord: $("d-discord").value.trim().replace(/^@+/, "").toLowerCase() || null
     };
   }
   $("d-form").addEventListener("submit", async function (e) {
@@ -396,15 +439,17 @@
     var p = formPatch();
     if (!(p.price > 0)) { $("d-err").textContent = "Enter the final price first, then accept."; $("d-price").focus(); return; }
     p.status = "accepted";
-    if (!(await save(p, "Accepted ✓ — message copied"))) return;
+    var auto = !!(p.email || p.discord);
+    if (!(await save(p, auto ? "Accepted ✓ " + current.name + " is being sent their price + pay link automatically" : "Accepted ✓"))) return;
     var r = current;
+    $("d-status").value = "accepted";
+    if (auto) return;
+    // Requests without email/Discord: copy a message to send by hand.
     var msg = "Hi " + r.name + "! 🍓 Your commission request " + r.code + " has been accepted!\n\n" +
       "Final price: " + money(r.price) + " USD\n" +
-      "Pay here: https://jamziebites.com/pay.html\n" +
-      "→ Enter your request code " + r.code + " and the amount " + money(r.price) + " at checkout.\n\n" +
+      "Pay here (your price is filled in for you): " + privateLink(r) + "\n\n" +
       "Your slot is secured once payment is received. Thank you so much! ♡ — Jamzie";
     copy(msg, "Accepted ✓ — message copied, paste it to " + r.name);
-    $("d-status").value = "accepted";
   });
   $("d-paid").addEventListener("click", async function () {
     var p = formPatch(); p.status = "paid"; if (p.stage === "done") p.stage = "waiting";

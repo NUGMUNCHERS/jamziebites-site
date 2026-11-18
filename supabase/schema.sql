@@ -229,6 +229,8 @@ begin
     v_state := 'failed'; v_note := 'This payment didn''t go through, so nothing was changed.';
   elsif p_result = 'processing' then
     v_state := 'processing'; v_note := 'Still processing (Klarna / Cash App can take a moment). This updates by itself.';
+  elsif v_req.id is null and upper(trim(coalesce(p_ref, ''))) = 'TIP' then
+    v_state := 'ok'; v_note := 'A tip 💝 (not for a specific commission). Thank you!';
   elsif v_req.id is null then
     v_state := 'attention';
     v_note := case when v_code is null
@@ -264,3 +266,165 @@ begin
   return v_state;
 end $$;
 revoke all on function public.record_stripe_payment(text,text,boolean,bigint,text,text,text,text,text,text) from public, anon, authenticated;
+
+-- ==========================================================================
+-- Clients: private request links + automatic email / Discord messages
+-- ==========================================================================
+-- Every request gets a long random token. https://jamziebites.com/request.html?t=TOKEN
+-- is the client's private page: status, progress, and a Pay button once accepted.
+-- Status changes queue messages in public.notifications. The "notify" Edge
+-- Function sends them by email (Resend) and/or Discord DM (Jamzie's bot).
+create extension if not exists pg_net;
+create extension if not exists pg_cron;
+
+alter table public.requests add column if not exists token text;
+update public.requests set token = encode(extensions.gen_random_bytes(18), 'hex') where token is null;
+alter table public.requests alter column token set default encode(extensions.gen_random_bytes(18), 'hex');
+alter table public.requests alter column token set not null;
+create unique index if not exists requests_token_idx on public.requests (token);
+alter table public.requests add column if not exists email text
+  check (email is null or (char_length(email) <= 254 and email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'));
+alter table public.requests add column if not exists discord text
+  check (discord is null or discord ~ '^[a-z0-9_.]{2,32}$');
+alter table public.requests add column if not exists discord_id text
+  check (discord_id is null or discord_id ~ '^[0-9]{5,25}$');
+grant update (email, discord) on public.requests to authenticated;
+
+-- If Jamzie fixes a client's Discord username, look the account up again.
+create or replace function public.reset_discord_id() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  if new.discord is distinct from old.discord then new.discord_id := null; end if;
+  return new;
+end $$;
+drop trigger if exists requests_discord_reset on public.requests;
+create trigger requests_discord_reset before update on public.requests for each row execute function public.reset_discord_id();
+
+create table if not exists public.notifications (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  request_id uuid not null references public.requests(id) on delete cascade,
+  kind text not null check (kind in ('received','accepted','paid','started','done','declined')),
+  channel text not null check (channel in ('email','discord')),
+  status text not null default 'pending' check (status in ('pending','sent','failed')),
+  attempts int not null default 0,
+  next_try_at timestamptz not null default now(),
+  sent_at timestamptz,
+  last_error text check (char_length(last_error) <= 500)
+);
+create index if not exists notifications_due_idx on public.notifications (next_try_at) where status = 'pending';
+create index if not exists notifications_request_idx on public.notifications (request_id);
+alter table public.notifications enable row level security;
+revoke all on public.notifications from anon, authenticated;
+grant select on public.notifications to authenticated;
+grant update (status, next_try_at, attempts) on public.notifications to authenticated;  -- "Send again"
+drop policy if exists "admin read notifications" on public.notifications;
+drop policy if exists "admin update notifications" on public.notifications;
+create policy "admin read notifications" on public.notifications for select to authenticated using (public.is_admin());
+create policy "admin update notifications" on public.notifications for update to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- Wake the "notify" Edge Function. pg_net only sends after the transaction
+-- commits, and it never blocks or breaks the change that triggered it.
+create or replace function public.kick_notifier() returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform net.http_post(
+    url := 'https://babujgeapxhrcrrrxoet.supabase.co/functions/v1/notify',
+    body := '{}'::jsonb,
+    headers := '{"Content-Type": "application/json"}'::jsonb,
+    timeout_milliseconds := 8000);
+exception when others then null;
+end $$;
+revoke all on function public.kick_notifier() from public, anon, authenticated;
+
+create or replace function public.queue_client_messages() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare v_kind text;
+begin
+  if tg_op = 'INSERT' then
+    v_kind := 'received';
+  elsif new.status is distinct from old.status then
+    v_kind := case new.status when 'accepted' then 'accepted' when 'paid' then 'paid'
+                when 'in_progress' then 'started' when 'done' then 'done' when 'declined' then 'declined' end;
+  end if;
+  if v_kind is null or (new.email is null and new.discord is null) then return new; end if;
+  -- Never send the same update twice (e.g. if a status is switched back and forth).
+  if exists (select 1 from public.notifications n where n.request_id = new.id and n.kind = v_kind) then return new; end if;
+  if new.email is not null then
+    insert into public.notifications (request_id, kind, channel) values (new.id, v_kind, 'email');
+  end if;
+  if new.discord is not null then
+    insert into public.notifications (request_id, kind, channel) values (new.id, v_kind, 'discord');
+  end if;
+  perform public.kick_notifier();
+  return new;
+end $$;
+drop trigger if exists requests_queue_messages on public.requests;
+create trigger requests_queue_messages after insert or update of status on public.requests
+  for each row execute function public.queue_client_messages();
+
+-- Back-up: retry anything still waiting (e.g. a client who hasn't joined the Discord server yet).
+select cron.schedule('jb-notify-retry', '* * * * *',
+  $c$select public.kick_notifier() where exists (select 1 from public.notifications where status = 'pending' and next_try_at <= now())$c$);
+
+-- ---------- PUBLIC: submit a request (email and/or Discord) ----------
+create or replace function public.submit_request2(
+  p_name text, p_email text, p_discord text, p_type text, p_character text, p_refs text, p_description text,
+  p_deadline date, p_privacy text, p_nsfw boolean, p_adult boolean, p_quote text
+) returns json
+language plpgsql security definer set search_path = '' as $$
+declare
+  v_email text := nullif(lower(trim(coalesce(p_email, ''))), '');
+  v_dc text := nullif(lower(regexp_replace(trim(coalesce(p_discord, '')), '^@+', '')), '');
+  v_contact text; v_code text; v_token text;
+begin
+  if v_email is null and v_dc is null then
+    raise exception 'Please give an email or a Discord username so I can reach you.';
+  end if;
+  if v_email is not null and (char_length(v_email) > 254 or v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$') then
+    raise exception 'That email address doesn''t look right.';
+  end if;
+  if v_dc is not null and v_dc !~ '^[a-z0-9_.]{2,32}$' then
+    raise exception 'That Discord username doesn''t look right. It''s the lowercase name on your Discord profile (no #1234).';
+  end if;
+  v_contact := concat_ws(' · ', 'Email: ' || v_email, 'Discord: ' || v_dc);
+
+  if (select count(*) from public.requests where created_at > now() - interval '10 minutes') >= 30 then
+    raise exception 'Too many requests right now — please try again in a few minutes.';
+  end if;
+  if (select count(*) from public.requests
+        where (email = v_email or discord = v_dc or lower(contact) = lower(v_contact))
+          and created_at > now() - interval '1 hour') >= 3 then
+    raise exception 'You''ve already sent a few requests — please wait for a reply.';
+  end if;
+  if coalesce(p_nsfw, false) and not coalesce(p_adult, false) then
+    raise exception 'NSFW requests need the 18+ confirmation.';
+  end if;
+
+  insert into public.requests (name, contact, email, discord, type, character_name, refs, description, deadline,
+                               privacy, nsfw, adult_confirmed, quote, queue_name, show_in_queue)
+  values (trim(p_name), v_contact, v_email, v_dc, trim(p_type), nullif(trim(p_character), ''), trim(p_refs),
+          trim(p_description), p_deadline, nullif(trim(p_privacy), ''), coalesce(p_nsfw, false),
+          coalesce(p_adult, false), nullif(trim(p_quote), ''),
+          case when coalesce(p_privacy, '') ilike 'public%' then left(trim(p_name), 60) else 'Anonymous' end,
+          not (coalesce(p_privacy, '') ilike 'fully private%'))
+  returning code, token into v_code, v_token;
+  return json_build_object('code', v_code, 'token', v_token);
+end $$;
+revoke all on function public.submit_request2(text,text,text,text,text,text,text,date,text,boolean,boolean,text) from public;
+grant execute on function public.submit_request2(text,text,text,text,text,text,text,date,text,boolean,boolean,text) to anon, authenticated;
+
+-- ---------- PUBLIC: a client's own request, by its private token only ----------
+create or replace function public.request_status(p_token text) returns json
+language sql stable security definer set search_path = '' as $$
+  select json_build_object(
+    'code', r.code, 'name', r.name, 'type', r.type, 'character', r.character_name,
+    'status', r.status, 'stage', r.stage, 'price', r.price, 'paid', r.paid_amount,
+    'owed', case when r.price is null then null else greatest(r.price - r.paid_amount, 0) end,
+    'created_at', r.created_at, 'paid_at', r.paid_at,
+    'via', concat_ws(' & ', case when r.email is not null then 'email' end, case when r.discord is not null then 'Discord' end))
+  from public.requests r
+  where p_token ~ '^[0-9a-f]{36}$' and r.token = p_token;
+$$;
+revoke all on function public.request_status(text) from public;
+grant execute on function public.request_status(text) to anon, authenticated;

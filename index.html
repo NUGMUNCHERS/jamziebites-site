@@ -521,9 +521,24 @@
                 <span class="err">What should I call you?</span>
               </div>
               <div class="field">
-                <label for="f-contact">Where can I reach you? <span class="req">*</span></label>
-                <input class="input" id="f-contact" name="contact" placeholder="Discord @ or email" maxlength="200" required>
-                <span class="err">I need a way to reply to you!</span>
+                <label for="f-via">How should I reach you? <span class="req">*</span></label>
+                <select class="select" id="f-via" name="via">
+                  <option value="email">Email</option>
+                  <option value="discord">Discord</option>
+                  <option value="both">Email + Discord</option>
+                </select>
+                <span class="help">You'll get automatic updates here: accepted, your pay link, progress.</span>
+              </div>
+              <div class="field" id="fld-email">
+                <label for="f-email">Email <span class="req">*</span></label>
+                <input class="input" id="f-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required>
+                <span class="err">Please enter a valid email address.</span>
+              </div>
+              <div class="field" id="fld-discord" hidden>
+                <label for="f-discord">Discord username <span class="req">*</span></label>
+                <input class="input" id="f-discord" name="discord" maxlength="33" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. starrypaws">
+                <span class="help" id="dc-help">Your <strong>username</strong> (lowercase), not your display name. Make sure you're in my Discord server so my bot can message you!</span>
+                <span class="err">Enter your Discord username, lowercase like “starrypaws” (no #1234).</span>
               </div>
               <div class="field">
                 <label for="f-type">Commission type <span class="req">*</span></label>

@@ -96,3 +96,10 @@ body.admin { background: var(--bg); min-height: 100vh; }
 @media (max-width: 520px) { .adm-pay-item { flex-wrap: wrap; } .adm-pay-main { flex-basis: calc(100% - 40px); } .adm-pay-item > .btn { margin-left: auto; } }
 [data-theme="dark"] .pay-pill-ok { color: #7ee2b8; }
 [data-theme="dark"] .pay-pill-attention { color: #ffd166; }
+
+/* Automatic client messages */
+.adm-msg { padding: 4px 0; }
+.adm-msg + .adm-msg { border-top: 1px dashed var(--line); }
+.adm-msg .btn { margin-left: 6px; }
+.adm-msgfail { background: #fff1d6; color: #8a5a00; }
+:root[data-theme="dark"] .adm-msgfail { background: #4a3a10; color: #ffd166; }
