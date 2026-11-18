@@ -47,6 +47,35 @@ As it stands, "Send my request" builds a neat message that the client copies int
 
 If the form ever fails to send, the site falls back to the copy-paste message, so nothing is lost.
 
+## Your studio (admin.html)
+
+**https://jamziebites.com/admin.html** is your private dashboard. It isn't linked anywhere on the site, so bookmark it.
+
+**Signing in:** use your email and password, plus a 6-digit code from an authenticator app.
+
+- The first time you sign in, it shows a QR code. Scan it with Google Authenticator, Authy, 1Password or similar.
+- From then on, every sign-in needs the code from the app.
+- Closing the tab signs you out, and so do 30 idle minutes.
+- The studio only works over `https://`.
+
+**What you can do there:**
+
+- **Requests:** everything clients send from the site lands here, sorted into New, Awaiting payment, In progress, Done and Declined. The browser tab shows how many are new.
+- **Accept:** type the final price, then click **Accept + copy message**. A ready-to-paste message (with their request code and the pay link) is copied for you. Send it to the client.
+- **Payments:** clients pay on the Pay page using their request code. In Stripe, each payment shows that code (it appears as the "client reference ID"). Match it, then click **Mark paid**, and the commission appears in the public queue.
+- **Progress:** move each piece through Sketch → Lineart → Color → Rendering → Done. The public queue updates instantly.
+- **Shop status:** switch between Open, Waitlist and Closed, and set the total number of slots. The badge on the site updates instantly.
+- **Private notes** on every request. Only you can see them.
+
+**Security:** requests live in a Supabase database.
+
+- The public can only submit requests (with spam and size limits) and read the public queue.
+- Reading or changing requests needs your account *and* your 2FA code. The database itself enforces this, not just the web page.
+- Public sign-ups are disabled.
+- The database setup is saved in `supabase/schema.sql`.
+
+**Lost your phone / authenticator?** Sign in to supabase.com → project **jamziebites** → Authentication → Users. Open your user and remove its MFA factor. The next time you sign in, the studio will ask you to set up 2FA again.
+
 ## Payments (pay.html)
 
 The **Pay** page sends clients to a Stripe Payment Link. They type in the exact amount you quoted (minimum $25) along with their username. Stripe handles the card, Apple Pay and Google Pay, and emails them a receipt. Each payment shows up in your Stripe dashboard under **Payments**, with the client's username in the "client reference" field.
