@@ -446,8 +446,8 @@
         r.includes.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>";
     }).join("");
   }
-  if ($("#expr-price")) $("#expr-price").textContent = "+" + money(P.expression || 20);
-  if ($("#price-cine")) $("#price-cine").textContent = money(P.cinematic || 250);
+  if ($("#expr-price")) $("#expr-price").textContent = "+" + money(P.expression || 15);
+  if ($("#price-cine")) $("#price-cine").textContent = money(P.cinematic || 190);
   if ($("#price-bg")) {
     $("#price-bg").innerHTML = (P.backgrounds || []).map(function (b) {
       return '<div class="card bg-item"><div class="bg-prev bgp-' + esc(b.id) + '"></div><div class="row"><span>' + esc(b.label) + "</span><span>" + (b.price ? "+" + money(b.price) : "FREE") + "</span></div></div>";
@@ -458,9 +458,9 @@
     var ad = [["Additional character", pct(P.extraCharacterRate || 0.85) + " of base price"]];
     (P.addons || []).forEach(function (a) {
       var note = a.only && a.only.length === 1 && a.only[0] === "ref" ? " (ref sheets only)" : "";
-      ad.push([a.label + note, "+" + money(a.min) + "–" + money(a.max)]);
+      ad.push([a.label + note, "+" + range(a.min, a.max)]);
     });
-    ad.push(["Additional ref sheet expression", "+" + money(P.expression || 20)]);
+    ad.push(["Additional ref sheet expression", "+" + money(P.expression || 15)]);
     ad.push(["NSFW / mature content (18+ only)", "+" + money(P.nsfw || 95)]);
     ad.push(["Rush commission", pct(P.rushRate || 0.35)]);
     ad.push(["Commercial usage", pct(P.commercialRate || 1)]);
@@ -508,9 +508,9 @@
       return '<option value="' + esc(b.id) + '">' + esc(b.label) + " — " + (b.price ? "+" + money(b.price) : "free") + "</option>";
     }).join("");
     $("#calc-addons").innerHTML = (P.addons || []).map(function (a) {
-      return '<label class="check" data-only="' + esc((a.only || []).join(" ")) + '"><input type="checkbox" name="addon" value="' + esc(a.id) + '"> ' + esc(a.label) + " <em>+" + money(a.min) + "–" + money(a.max) + "</em></label>";
+      return '<label class="check" data-only="' + esc((a.only || []).join(" ")) + '"><input type="checkbox" name="addon" value="' + esc(a.id) + '"> ' + esc(a.label) + " <em>+" + esc(range(a.min, a.max)) + "</em></label>";
     }).join("");
-    $("#expr-hint").textContent = "+" + money(P.expression || 20) + " each";
+    $("#expr-hint").textContent = "+" + money(P.expression || 15) + " each";
     if ($("#calc-nsfw-price")) $("#calc-nsfw-price").textContent = "+" + money(P.nsfw || 95);
 
     var counters = { chars: 0, expr: 0 };
@@ -547,9 +547,9 @@
         var r = find(P.refSheets, val("ref")) || P.refSheets[0];
         base = r.price; baseLabel = r.label; formType = r.label;
         add(r.label, base);
-        if (counters.expr) add(counters.expr + " extra expression" + (counters.expr > 1 ? "s" : ""), counters.expr * (P.expression || 20));
+        if (counters.expr) add(counters.expr + " extra expression" + (counters.expr > 1 ? "s" : ""), counters.expr * (P.expression || 15));
       } else {
-        base = P.cinematic || 250; baseLabel = "Cinematic Illustration"; formType = "Cinematic Illustration";
+        base = P.cinematic || 190; baseLabel = "Cinematic Illustration"; formType = "Cinematic Illustration";
         add(baseLabel, base);
       }
 

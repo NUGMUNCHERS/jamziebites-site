@@ -128,9 +128,9 @@ window.JAMZIE = {
      Changing a number here updates the price lists AND the quote calculator. */
   pricing: {
     sizes: [
-      { id: "headshot", label: "Headshot",  price: 40, simple: 10, render: 25 },
-      { id: "half",     label: "Half Body", price: 65, simple: 20, render: 40 },
-      { id: "full",     label: "Full Body", price: 95, simple: 30, render: 60 }
+      { id: "headshot", label: "Headshot",  price: 35, simple: 10, render: 15 },
+      { id: "half",     label: "Half Body", price: 50, simple: 15, render: 25 },
+      { id: "full",     label: "Full Body", price: 75, simple: 20, render: 40 }
     ],
     chibi: [
       { id: "headshot", label: "Headshot",  price: 25 },
@@ -138,34 +138,34 @@ window.JAMZIE = {
       { id: "full",     label: "Full Body", price: 45 }
     ],
     stickers: [
-      { id: "single", label: "Single Sticker", price: 25,  count: 1 },
-      { id: "pack5",  label: "5 Sticker Pack", price: 110, count: 5 },
-      { id: "pack10", label: "10 Sticker Pack", price: 200, count: 10 }
+      { id: "single", label: "Single Sticker", price: 15,  count: 1 },
+      { id: "pack5",  label: "5 Sticker Pack", price: 85,  count: 5 },
+      { id: "pack10", label: "10 Sticker Pack", price: 120, count: 10 }
     ],
     backgrounds: [
       { id: "solid",      label: "Solid Color / Transparent",   price: 0 },
       { id: "gradient",   label: "Gradient",                    price: 5 },
-      { id: "decorative", label: "Simple Decorative",           price: 15 },
-      { id: "simple",     label: "Simple Scenery",              price: 35 },
-      { id: "detailed",   label: "Detailed Scenery",            price: 65 },
-      { id: "cinematic",  label: "Complex Cinematic Scenery",   price: 100 }
+      { id: "decorative", label: "Simple Decorative Background", price: 15 },
+      { id: "simple",     label: "Simple Scenery",              price: 20 },
+      { id: "detailed",   label: "Detailed Scenery",            price: 30 },
+      { id: "cinematic",  label: "Complex Cinematic Scenery",   price: 75 }
     ],
     refSheets: [
-      { id: "simple", label: "Simple Reference Sheet", price: 165,
+      { id: "simple", label: "Simple Reference Sheet", price: 120,
         includes: ["Front View", "Back View", "Color Palette", "Character Information"] },
-      { id: "deluxe", label: "Deluxe Reference Sheet", price: 285,
+      { id: "deluxe", label: "Deluxe Reference Sheet", price: 200,
         includes: ["Front View", "Back View", "Side View", "Headshot", "Color Palette", "Character Information"] }
     ],
-    cinematic: 250,
-    expression: 20,               // each additional ref sheet expression
+    cinematic: 190,
+    expression: 15,               // each additional ref sheet expression
     nsfw: 95,                     // flat fee for NSFW / mature content
     addons: [
-      { id: "markings", label: "Complex character markings", min: 15, max: 35 },
-      { id: "wings",    label: "Wings / additional limbs",   min: 15, max: 30 },
-      { id: "clothing", label: "Complex clothing / armor",   min: 20, max: 45 },
+      { id: "markings", label: "Complex character markings", min: 15, max: 15 },
+      { id: "wings",    label: "Wings / additional limbs",   min: 15, max: 15 },
+      { id: "clothing", label: "Complex clothing / armor",   min: 20, max: 20 },
       { id: "props",    label: "Props / accessories",        min: 10, max: 25 },
       // "only" limits an add-on to certain commission types in the quote calculator
-      { id: "design",   label: "Custom character design",    min: 50, max: 100, only: ["ref"] }
+      { id: "design",   label: "Custom character design",    min: 50, max: 50, only: ["ref"] }
     ],
     extraCharacterRate: 0.85,     // each extra character = 85% of the base price
     rushRate: 0.35,               // rush = +35%
