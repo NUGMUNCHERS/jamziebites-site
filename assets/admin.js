@@ -76,6 +76,8 @@
     try { await sb.auth.signOut(); } catch (e) {}
     try { sessionStorage.clear(); } catch (e) {}
     data = []; $("list").innerHTML = ""; closeDrawer();
+    payments = []; paymentsLoaded = false; seenIds = {};
+    $("pay-list").innerHTML = ""; $("pay-hist-list").innerHTML = ""; $("pay-box").hidden = true;
     show("v-login");
   }
   $("signout").addEventListener("click", signOut);
@@ -181,11 +183,82 @@
   }
 
   async function load() {
-    var r = await sb.from("requests").select("*").order("created_at", { ascending: false }).limit(1000);
+    var both = await Promise.all([
+      sb.from("requests").select("*").order("created_at", { ascending: false }).limit(1000),
+      sb.from("payments").select("*").order("created_at", { ascending: false }).limit(200)
+    ]);
+    var r = both[0], p = both[1];
     if (r.error) { toast("Couldn't load requests: " + r.error.message); return; }
     data = r.data || [];
+    if (!p.error) {
+      var fresh = (p.data || []).filter(function (x) { return !x.seen && x.state !== "processing" && !seenIds[x.id]; });
+      if (paymentsLoaded && fresh.length) toast("💳 New payment from " + (fresh[0].customer_name || "a client") + " — " + money(fresh[0].amount));
+      fresh.forEach(function (x) { seenIds[x.id] = true; });
+      payments = p.data || [];
+      paymentsLoaded = true;
+    }
     render();
+    renderPayments();
   }
+
+  /* ---------- Payments (written by the Stripe webhook, never by this page) ---------- */
+  var payments = [], paymentsLoaded = false, seenIds = {};
+  var PAY_STATE = {
+    ok: ["✅", "Paid"],
+    attention: ["⚠️", "Needs a look"],
+    processing: ["⏳", "Processing"],
+    failed: ["✕", "Didn't go through"]
+  };
+  function payItem(x, withButton) {
+    var st = PAY_STATE[x.state] || ["💳", x.state];
+    var req = x.request_id && data.filter(function (r) { return r.id === x.request_id; })[0];
+    var who = x.customer_name || x.customer_email || "Someone";
+    return '<div class="adm-pay-item pay-' + esc(x.state) + '">' +
+      '<span class="adm-pay-ico" aria-hidden="true">' + st[0] + '</span>' +
+      '<div class="adm-pay-main"><b>' + money(x.amount) + (x.currency && x.currency !== "usd" ? " " + esc(x.currency.toUpperCase()) : "") +
+      '</b> from ' + esc(who) + ' <span class="adm-pill pay-pill-' + esc(x.state) + '">' + esc(st[1]) + '</span>' +
+      '<small>' + esc(when(x.created_at)) +
+      (req ? ' · for <button type="button" class="adm-linkbtn" data-open="' + esc(req.id) + '">' + esc(req.name) + " · " + esc(req.code) + "</button>"
+           : (x.code_given ? " · code given: " + esc(x.code_given) : " · no request code")) +
+      (x.customer_email && x.customer_name ? " · " + esc(x.customer_email) : "") + '</small>' +
+      (x.note ? '<small class="adm-pay-note">' + esc(x.note) + "</small>" : "") + '</div>' +
+      (withButton ? '<button type="button" class="btn btn-sm" data-seen="' + esc(x.id) + '">Got it</button>' : "") +
+      "</div>";
+  }
+  function renderPayments() {
+    var unseen = payments.filter(function (x) { return !x.seen && x.state !== "processing"; });
+    var attention = unseen.filter(function (x) { return x.state === "attention"; }).length;
+    $("pay-box").hidden = !unseen.length;
+    $("pay-box").classList.toggle("adm-pay-warn", attention > 0);
+    $("pay-title").textContent = attention
+      ? "⚠️ " + attention + " payment" + (attention > 1 ? "s need" : " needs") + " a look" + (unseen.length > attention ? " · " + (unseen.length - attention) + " new" : "")
+      : "💳 " + unseen.length + " new payment" + (unseen.length > 1 ? "s" : "");
+    $("pay-list").innerHTML = unseen.map(function (x) { return payItem(x, true); }).join("");
+    $("c-pay").textContent = payments.length ? payments.length : "";
+    $("pay-hist-list").innerHTML = payments.length
+      ? payments.slice(0, 50).map(function (x) { return payItem(x, false); }).join("")
+      : '<p class="adm-muted adm-small">No payments yet.</p>';
+    var newN = data.filter(GROUPS["new"]).length;
+    document.title = (unseen.length ? "(💳" + unseen.length + ") " : "") + (newN ? "(" + newN + ") " : "") + "Studio · JamzieBites";
+  }
+  async function markSeen(ids) {
+    if (!ids.length) return;
+    var r = await sb.from("payments").update({ seen: true }).in("id", ids).select("id");
+    if (r.error) { toast("Couldn't update: " + r.error.message); return; }
+    payments = payments.map(function (x) { return ids.indexOf(x.id) > -1 ? Object.assign({}, x, { seen: true }) : x; });
+    renderPayments();
+  }
+  function onPayClick(e) {
+    var o = e.target.closest("[data-open]");
+    if (o) { openDrawer(o.getAttribute("data-open")); return; }
+    var s = e.target.closest("[data-seen]");
+    if (s) markSeen([s.getAttribute("data-seen")]);
+  }
+  $("pay-list").addEventListener("click", onPayClick);
+  $("pay-hist-list").addEventListener("click", onPayClick);
+  $("pay-seen-all").addEventListener("click", function () {
+    markSeen(payments.filter(function (x) { return !x.seen && x.state !== "processing"; }).map(function (x) { return x.id; }));
+  });
 
   function render() {
     var q = $("search").value.trim().toLowerCase();
@@ -198,8 +271,7 @@
     $("s-await").textContent = data.filter(GROUPS.accepted).length;
     $("s-active").textContent = data.filter(GROUPS.active).length;
     $("s-earned").textContent = money(data.filter(function (r) { return /^(paid|in_progress|done)$/.test(r.status); })
-      .reduce(function (t, r) { return t + Number(r.price || 0); }, 0));
-    document.title = (newN ? "(" + newN + ") " : "") + "Studio · JamzieBites";
+      .reduce(function (t, r) { return t + (Number(r.paid_amount) > 0 ? Number(r.paid_amount) : Number(r.price || 0)); }, 0));
 
     var rows = data.filter(GROUPS[filter]).filter(function (r) {
       if (!q) return true;
@@ -259,6 +331,16 @@
       field("References", linkify(r.refs)) +
       field("Idea", linkify(r.description)) +
       field("Quote estimate", r.quote ? '<pre class="adm-pre">' + esc(r.quote) + "</pre>" : "") +
+      field("Payments", (function () {
+        var mine = payments.filter(function (x) { return x.request_id === r.id; });
+        if (!mine.length && !(Number(r.paid_amount) > 0)) return "";
+        return (Number(r.paid_amount) > 0 ? "<b>" + money(r.paid_amount) + " received</b>" +
+          (r.price != null ? " of " + money(r.price) : "") + (r.paid_at ? " · paid in full " + esc(when(r.paid_at)) : "") : "") +
+          mine.map(function (x) {
+            return '<br><small class="adm-muted">' + (PAY_STATE[x.state] || ["💳"])[0] + " " + money(x.amount) + " · " + esc(when(x.created_at)) +
+              (x.customer_email ? " · " + esc(x.customer_email) : "") + "</small>";
+          }).join("");
+      })()) +
       field("Deadline", esc(r.deadline)) +
       field("Privacy", esc(r.privacy));
     $("d-status").value = r.status;

@@ -62,7 +62,14 @@ If the form ever fails to send, the site falls back to the copy-paste message, s
 
 - **Requests:** everything clients send from the site lands here, sorted into New, Awaiting payment, In progress, Done and Declined. The browser tab shows how many are new.
 - **Accept:** type the final price, then click **Accept + copy message**. A ready-to-paste message (with their request code and the pay link) is copied for you. Send it to the client.
-- **Payments:** clients pay on the Pay page using their request code. In Stripe, each payment shows that code (it appears as the "client reference ID"). Match it, then click **Mark paid**, and the commission appears in the public queue.
+- **Payments are automatic.** Clients pay on the Pay page using their request code. The moment Stripe confirms a payment, the studio does the rest:
+  - If the amount covers the price, the request is marked **Paid** and joins the public queue. You don't click anything.
+  - A **💳 New payment** box appears at the top of the studio, and the browser tab shows (💳1).
+  - Anything unusual is flagged in yellow as **Needs a look**: paying less than the price, a wrong or missing code, paying before you set a price, or paying for a declined request. Nothing is marked paid in those cases. Check it, then use **Mark paid** by hand if it's right.
+  - Split payments add up. If someone pays $50 and then the remaining $20 of a $70 piece, it's marked paid on the second payment.
+  - **Payment history** lists every payment, and each request shows how much was received.
+  - Stripe also emails you a receipt for every successful payment. Install the **Stripe app** on your phone for instant push notifications.
+- **Mark paid** still works by hand, for payments made outside the site (like an art trade or cash).
 - **Progress:** move each piece through Sketch → Lineart → Color → Rendering → Done. The public queue updates instantly.
 - **Shop status:** switch between Open, Waitlist and Closed, and set the total number of slots. The badge on the site updates instantly.
 - **Private notes** on every request. Only you can see them.
@@ -73,6 +80,15 @@ If the form ever fails to send, the site falls back to the copy-paste message, s
 - Reading or changing requests needs your account *and* your 2FA code. The database itself enforces this, not just the web page.
 - Public sign-ups are disabled.
 - The database setup is saved in `supabase/schema.sql`.
+
+**How automatic payments work:**
+
+1. Stripe sends a webhook (destination "JamzieBites studio auto-paid", events `checkout.session.*`) to the Supabase Edge Function `stripe-webhook`. Its code is in `supabase/functions/stripe-webhook/index.ts`.
+2. The function rejects anything without a valid Stripe signature. It checks against the `STRIPE_WEBHOOK_SECRET` Edge Function secret, and also rejects anything older than 5 minutes.
+3. It then calls the database function `record_stripe_payment()`, which nobody on the website can call. That function does the matching.
+4. Duplicate deliveries from Stripe are only ever counted once.
+5. If Stripe ever shows failed webhook deliveries (Workbench → Webhooks), check the function's logs in Supabase.
+6. If the signing secret is ever rolled in Stripe, paste the new one into Supabase → Edge Functions → Secrets.
 
 **Lost your phone / authenticator?** Sign in to supabase.com → project **jamziebites** → Authentication → Users. Open your user and remove its MFA factor. The next time you sign in, the studio will ask you to set up 2FA again.
 

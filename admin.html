@@ -93,6 +93,20 @@
         <div class="card adm-stat"><span>Earned (paid)</span><b id="s-earned">$0</b></div>
       </div>
 
+      <!-- Payments: filled in automatically by the Stripe webhook -->
+      <section class="card adm-pay" id="pay-box" hidden aria-live="polite">
+        <div class="adm-pay-head">
+          <h2 id="pay-title">💳 New payments</h2>
+          <button class="btn btn-sm" type="button" id="pay-seen-all">Got it — clear all</button>
+        </div>
+        <div id="pay-list" class="adm-pay-list"></div>
+      </section>
+      <details class="card adm-pay-history" id="pay-history">
+        <summary>💳 Payment history <i id="c-pay"></i></summary>
+        <p class="adm-muted adm-small">Payments made on the Pay page show up here by themselves. When the amount covers the price, the request is marked <b>Paid</b> for you, so you don't need to click anything. Anything unusual is flagged in yellow.</p>
+        <div id="pay-hist-list" class="adm-pay-list"></div>
+      </details>
+
       <form class="card adm-shop" id="shop-form">
         <h2>Shop status</h2>
         <div class="adm-shop-row">

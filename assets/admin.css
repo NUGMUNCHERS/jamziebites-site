@@ -70,3 +70,29 @@ body.admin { background: var(--bg); min-height: 100vh; }
 .adm-danger { color: #e23b62; border-color: #ffc2cf; }
 .adm-confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; padding: 12px; border-radius: 12px; background: #ffe5ea; color: #a01a3c; font-weight: 700; }
 .adm-confirm[hidden] { display: none; }
+
+/* Payments (auto-filled by the Stripe webhook) */
+.adm-pay { padding: 16px 20px; margin-bottom: 18px; border: 2px solid color-mix(in srgb, var(--mint) 55%, transparent); background: color-mix(in srgb, var(--mint) 10%, var(--surface)); }
+.adm-pay[hidden] { display: none; }
+.adm-pay.adm-pay-warn { border-color: color-mix(in srgb, var(--star) 70%, transparent); background: color-mix(in srgb, var(--star) 12%, var(--surface)); }
+.adm-pay-head { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.adm-pay-head h2 { font-size: 1.2rem; margin: 0; }
+.adm-pay-list { display: grid; gap: 8px; }
+.adm-pay-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.adm-pay-item.pay-attention { border-color: color-mix(in srgb, var(--star) 70%, transparent); }
+.adm-pay-item.pay-failed { opacity: .75; }
+.adm-pay-ico { font-size: 1.2rem; line-height: 1.4; }
+.adm-pay-main { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.adm-pay-main b { font-family: var(--font-display); font-size: 1.05rem; }
+.adm-pay-main small { display: block; color: var(--muted); font-weight: 700; margin-top: 2px; }
+.adm-pay-main .adm-pay-note { color: var(--ink-soft); font-weight: 600; }
+.pay-pill-ok { background: color-mix(in srgb, var(--mint) 25%, transparent); color: #1e8a5c; }
+.pay-pill-attention { background: color-mix(in srgb, var(--star) 30%, transparent); color: #8a6200; }
+.adm-linkbtn { text-align: left; background: none; border: 0; padding: 0; font: inherit; color: var(--pink-deep); text-decoration: underline; cursor: pointer; }
+.adm-pay-history { padding: 12px 20px; margin-bottom: 18px; }
+.adm-pay-history summary { cursor: pointer; font-weight: 800; }
+.adm-pay-history summary i { font-style: normal; opacity: .7; margin-left: 4px; }
+.adm-pay-history p { margin: 8px 0 10px; }
+@media (max-width: 520px) { .adm-pay-item { flex-wrap: wrap; } .adm-pay-main { flex-basis: calc(100% - 40px); } .adm-pay-item > .btn { margin-left: auto; } }
+[data-theme="dark"] .pay-pill-ok { color: #7ee2b8; }
+[data-theme="dark"] .pay-pill-attention { color: #ffd166; }

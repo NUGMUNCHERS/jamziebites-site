@@ -144,3 +144,123 @@ language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function public.public_status() from public;
 grant execute on function public.public_status() to anon, authenticated;
+
+-- ---------- Payments (written ONLY by the stripe-webhook Edge Function) ----------
+-- Stripe -> Edge Function (verifies Stripe's signature) -> record_stripe_payment().
+-- Nobody on the website can call record_stripe_payment(); only the database owner
+-- (which the Edge Function connects as) can.
+alter table public.requests add column if not exists paid_amount numeric(10,2) not null default 0;
+alter table public.requests add column if not exists paid_at timestamptz;
+
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  stripe_session text not null unique check (char_length(stripe_session) <= 255),
+  stripe_payment_intent text check (char_length(stripe_payment_intent) <= 255),
+  livemode boolean not null default true,
+  amount numeric(10,2) not null check (amount >= 0),
+  currency text not null default 'usd' check (char_length(currency) <= 10),
+  code_given text check (char_length(code_given) <= 300),
+  request_id uuid references public.requests(id) on delete set null,
+  customer_name text check (char_length(customer_name) <= 200),
+  customer_email text check (char_length(customer_email) <= 320),
+  succeeded boolean not null default false,
+  state text not null default 'processing' check (state in ('ok','attention','processing','failed')),
+  note text check (char_length(note) <= 500),
+  seen boolean not null default false
+);
+create index if not exists payments_created_idx on public.payments (created_at desc);
+create index if not exists payments_request_idx on public.payments (request_id);
+alter table public.payments enable row level security;
+revoke all on public.payments from anon, authenticated;
+grant select on public.payments to authenticated;
+grant update (seen) on public.payments to authenticated;
+drop policy if exists "admin read payments" on public.payments;
+drop policy if exists "admin update payments" on public.payments;
+create policy "admin read payments" on public.payments for select to authenticated using (public.is_admin());
+create policy "admin update payments" on public.payments for update to authenticated using (public.is_admin()) with check (public.is_admin());
+drop trigger if exists payments_touch on public.payments;
+create trigger payments_touch before update on public.payments for each row execute function public.touch_updated_at();
+
+create or replace function public.record_stripe_payment(
+  p_session text, p_intent text, p_livemode boolean, p_amount_cents bigint, p_currency text,
+  p_ref text, p_custom text, p_name text, p_email text, p_result text  -- p_result: paid | processing | failed
+) returns text
+language plpgsql security definer set search_path = '' as $$
+declare
+  v_prev public.payments%rowtype;
+  v_req public.requests%rowtype;
+  v_code text;
+  v_cur text := lower(coalesce(nullif(trim(p_currency), ''), 'usd'));
+  v_amount numeric(10,2) := round(greatest(coalesce(p_amount_cents, 0), 0) / 100.0, 2);
+  v_total numeric(10,2);
+  v_state text; v_note text;
+begin
+  if p_session is null or p_session = '' then raise exception 'missing session'; end if;
+  if p_result not in ('paid', 'processing', 'failed') then raise exception 'bad result'; end if;
+
+  -- Stripe can send the same event more than once: a payment is only ever counted once.
+  select * into v_prev from public.payments where stripe_session = p_session for update;
+  if v_prev.id is not null and v_prev.succeeded then return 'duplicate'; end if;
+
+  -- Find the request code (JB-XXXXXX). The Pay page attaches it automatically;
+  -- the text box at checkout is a backup.
+  v_code := coalesce(substring(upper(coalesce(p_ref, '')) from 'JB-?[A-F0-9]{6}'),
+                     substring(upper(coalesce(p_custom, '')) from 'JB-?[A-F0-9]{6}'));
+  if v_code is not null and substr(v_code, 3, 1) <> '-' then v_code := 'JB-' || substr(v_code, 3); end if;
+  if v_code is not null then
+    select * into v_req from public.requests where code = v_code for update;
+  end if;
+
+  insert into public.payments (stripe_session, stripe_payment_intent, livemode, amount, currency, code_given,
+                               request_id, customer_name, customer_email, succeeded)
+  values (left(p_session, 255), left(p_intent, 255), coalesce(p_livemode, true), v_amount, left(v_cur, 10),
+          left(trim(concat_ws(' · ', nullif(trim(p_ref), ''), nullif(trim(p_custom), ''))), 300),
+          v_req.id, left(trim(p_name), 200), left(trim(p_email), 320), p_result = 'paid')
+  on conflict (stripe_session) do update set
+    stripe_payment_intent = coalesce(excluded.stripe_payment_intent, public.payments.stripe_payment_intent),
+    amount = excluded.amount, currency = excluded.currency, request_id = excluded.request_id,
+    customer_name = coalesce(excluded.customer_name, public.payments.customer_name),
+    customer_email = coalesce(excluded.customer_email, public.payments.customer_email),
+    succeeded = excluded.succeeded, seen = false;
+
+  if p_result = 'failed' then
+    v_state := 'failed'; v_note := 'This payment didn''t go through, so nothing was changed.';
+  elsif p_result = 'processing' then
+    v_state := 'processing'; v_note := 'Still processing (Klarna / Cash App can take a moment). This updates by itself.';
+  elsif v_req.id is null then
+    v_state := 'attention';
+    v_note := case when v_code is null
+      then 'No request code was attached, so it couldn''t be matched. Find their request and mark it paid by hand.'
+      else 'No request has the code ' || v_code || '. Check the code with the client, then mark the right request paid.' end;
+  else
+    select coalesce(sum(p.amount), 0) into v_total from public.payments p
+      where p.request_id = v_req.id and p.succeeded and p.currency = 'usd';
+    update public.requests set paid_amount = v_total where id = v_req.id;
+
+    if v_cur <> 'usd' then
+      v_state := 'attention'; v_note := 'Paid in ' || upper(v_cur) || ' instead of USD. Check it in Stripe.';
+    elsif v_req.status in ('declined', 'cancelled') then
+      v_state := 'attention'; v_note := 'This request was ' || v_req.status || '. You may want to refund it in Stripe.';
+    elsif v_req.status in ('paid', 'in_progress', 'done') then
+      v_state := 'attention'; v_note := 'This request was already paid, so this is an extra payment (a tip or a duplicate?).';
+    elsif v_req.price is null then
+      v_state := 'attention';
+      v_note := 'Paid before a final price was set. Set the price, then click Mark paid if the amount is right.';
+    elsif v_total >= v_req.price then
+      update public.requests
+        set status = 'paid', paid_at = now(), stage = case when stage = 'done' then 'waiting' else stage end
+        where id = v_req.id;
+      v_state := 'ok'; v_note := 'Marked paid automatically and added to the public queue.';
+    else
+      v_state := 'attention';
+      v_note := 'Paid $' || to_char(v_total, 'FM999999990.00') || ' of $' || to_char(v_req.price, 'FM999999990.00')
+             || ', so $' || to_char(v_req.price - v_total, 'FM999999990.00') || ' is still owed. Not marked paid yet.';
+    end if;
+  end if;
+
+  update public.payments set state = v_state, note = v_note where stripe_session = p_session;
+  return v_state;
+end $$;
+revoke all on function public.record_stripe_payment(text,text,boolean,bigint,text,text,text,text,text,text) from public, anon, authenticated;
