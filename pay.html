@@ -84,9 +84,10 @@
           <form class="card pay-form" id="pay-form" novalidate>
             <h2 style="font-size:1.6rem">✦ Pay now</h2>
             <div class="field">
-              <label for="p-user">Your username <span class="req" style="color:var(--pink-deep)">*</span></label>
-              <input class="input" id="p-user" autocomplete="nickname" placeholder="The name you used in your request" required>
-              <span class="err">So Jamzie knows whose payment this is!</span>
+              <label for="p-user">Your request code <span class="req" style="color:var(--pink-deep)">*</span></label>
+              <input class="input" id="p-user" autocomplete="off" placeholder="e.g. JB-1A2B3C" maxlength="9" required style="text-transform:uppercase;letter-spacing:.08em">
+              <span class="help">It's in your acceptance message (and shown when you sent your request).</span>
+              <span class="err">Enter your request code — it looks like JB-1A2B3C.</span>
             </div>
             <div class="agree" style="margin-top:16px">
               <label class="check"><input type="checkbox" id="p-accepted" required> My commission has been accepted and I know my final price.</label>

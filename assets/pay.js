@@ -32,17 +32,18 @@
     if (!link) return;
     var bad = null;
     var user = $("p-user");
-    if (!user.value.trim()) { user.closest(".field").classList.add("invalid"); bad = bad || user; }
+    var code = user.value.trim().toUpperCase().replace(/\s+/g, "");
+    if (/^JB[A-F0-9]{6}$/.test(code)) code = "JB-" + code.slice(2);
+    if (!/^JB-[A-F0-9]{6}$/.test(code)) { user.closest(".field").classList.add("invalid"); bad = bad || user; }
     ["p-accepted", "p-tos"].forEach(function (id) {
       var cb = $(id);
       if (!cb.checked) { cb.closest(".check").classList.add("invalid"); bad = bad || cb; }
     });
     if (bad) { bad.focus(); return; }
 
-    // Tag the payment with the client's username so Jamzie can match it up.
-    var ref = user.value.trim().replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 190) || "client";
+    // Tag the payment with the request code so Jamzie can match it in Stripe.
     var url = new URL(link.toString());
-    url.searchParams.set("client_reference_id", ref);
+    url.searchParams.set("client_reference_id", code);
     location.href = url.toString();
   });
 })();
