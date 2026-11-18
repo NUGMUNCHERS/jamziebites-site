@@ -14,7 +14,7 @@ import postgres from "npm:postgres@3.4.5";
 const sql = postgres(Deno.env.get("SUPABASE_DB_URL") ?? "", { prepare: false, max: 1, idle_timeout: 20 });
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
 const RESEND_KEY = env("RESEND_API_KEY");
-const FROM = env("NOTIFY_FROM") || "Jamzie 🍓 <hello@jamziebites.com>";
+const FROM = env("NOTIFY_FROM") || "Jamzie from JamzieBites <hello@jamziebites.com>";
 const REPLY_TO = env("NOTIFY_REPLY_TO");
 const BOT = env("DISCORD_BOT_TOKEN");
 const GUILD = env("DISCORD_GUILD_ID");
@@ -32,39 +32,39 @@ function message(kind: string, r: Req) {
   const owed = Number(r.price ?? 0) - Number(r.paid_amount ?? 0);
   const M: Record<string, { subject: string; lines: string[]; button: string }> = {
     received: {
-      subject: `I got your commission request! ✦ (${r.code})`,
+      subject: `I got your commission request! (${r.code})`,
       lines: [`Hi ${r.name}! 🍓`,
         `Thank you so much for requesting a ${piece}! It's safely in my inbox and I'll look it over soon.`,
         `If I accept it, you'll get a message with your final price and a link to pay. Please don't send any payment before then.`],
       button: "Check on my request",
     },
     accepted: {
-      subject: `Your commission is accepted! 🎉 (${r.code})`,
+      subject: `Your commission is accepted! (${r.code})`,
       lines: [`Hi ${r.name}! Great news: I've accepted your ${piece}! ✨`,
         `Your final price is ${money(owed)}. Use the button below to pay. The amount is filled in for you, so there's no code to type.`,
         `Your slot is locked in as soon as payment goes through. Thank you so much! ♡`],
       button: `Pay ${money(owed)}`,
     },
     paid: {
-      subject: `Payment received, thank you! ♡ (${r.code})`,
+      subject: `Payment received, thank you! (${r.code})`,
       lines: [`Hi ${r.name}! I got your payment of ${money(Number(r.paid_amount) > 0 ? r.paid_amount : r.price)} for your ${piece}. Your slot is locked in! 🎉`,
         `You can watch it move from sketch to finished piece on your request page anytime.`],
       button: "Follow my commission",
     },
     started: {
-      subject: `I've started on your commission! ✏️ (${r.code})`,
+      subject: `I've started on your commission! (${r.code})`,
       lines: [`Hi ${r.name}! Just letting you know I've started working on your ${piece}. 🎨`,
         `Your request page shows which stage it's at.`],
       button: "See progress",
     },
     done: {
-      subject: `Your commission is finished! 🎨✨ (${r.code})`,
+      subject: `Your commission is finished! (${r.code})`,
       lines: [`Hi ${r.name}! Your ${piece} is all done! 🎉`,
         `I'll send your final files over (if I haven't already). Thank you so much for commissioning me, it truly means the world. ♡`],
       button: "View my request",
     },
     message: {
-      subject: `New message from Jamzie about your commission 💌 (${r.code})`,
+      subject: `New message from Jamzie about your commission (${r.code})`,
       lines: [`Hi ${r.name}! Jamzie sent you an update on your ${piece}. It could be a sketch, a work-in-progress, or a quick question. ✨`,
         `Open your request page to see it and reply. You can send pictures back there too.`],
       button: "View message",
@@ -90,9 +90,10 @@ function emailHtml(m: { subject: string; lines: string[]; button: string; link: 
 <div style="font-size:22px;font-weight:800;margin-bottom:14px">Jamzie<span style="color:#e0559a">Bites</span> 🍓</div>
 ${m.lines.map((l) => `<p style="font-size:16px;line-height:1.55;margin:0 0 14px">${esc(l)}</p>`).join("")}
 <p style="margin:22px 0 8px"><a href="${esc(m.link)}" style="display:inline-block;background:#e0559a;color:#ffffff;text-decoration:none;font-weight:800;padding:13px 24px;border-radius:999px">${esc(m.button)}</a></p>
+<p style="font-size:16px;line-height:1.55;margin:18px 0 0">— Jamzie ♡</p>
 <p style="font-size:12px;color:#8a7a99;margin:18px 0 0">This link is private to your request, so please don't share it. Reply to this email if you have any questions.</p>
 </div></div>
-<p style="font-size:12px;color:#8a7a99;text-align:center;margin-top:16px">JamzieBites · <a href="${SITE}" style="color:#8a7a99">jamziebites.com</a></p>
+<p style="font-size:12px;color:#8a7a99;text-align:center;margin-top:16px">JamzieBites · jamziebites.com</p>
 </div></body></html>`;
 }
 
