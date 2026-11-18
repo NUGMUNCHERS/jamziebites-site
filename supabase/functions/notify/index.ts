@@ -162,7 +162,14 @@ function gatewayHello(): Promise<string> {
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (url.searchParams.get("connect") === "1") {
-    return Response.json({ discord: BOT ? await gatewayHello() : "no bot token", email: RESEND_KEY ? "key set" : "no key" });
+    // Also lists the servers the bot has joined (names + IDs only), to fill in DISCORD_GUILD_ID.
+    const guilds = BOT ? await discord("/users/@me/guilds") : null;
+    return Response.json({
+      discord: BOT ? await gatewayHello() : "no bot token",
+      servers: guilds?.ok ? (guilds.j as { id: string; name: string }[]).map((g) => ({ id: g.id, name: g.name })) : [],
+      server_id_set: GUILD ? GUILD : "not set",
+      email: RESEND_KEY ? "key set" : "no key",
+    });
   }
 
   const jobs = await sql`
