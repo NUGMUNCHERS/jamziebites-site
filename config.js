@@ -122,6 +122,27 @@ window.JAMZIE = {
       category: "chibi",
       tier: "Expression / Sticker Sheet",
       alt: "Four chibi expressions of a fluffy pastel poodle in a striped periwinkle sweater: shy, sobbing, excited on a leash, and blushing — captioned 'none of these thoughts are in the bible.'"
+    },
+    {
+      src: "assets/art/lunaari-ref-sheet.jpg", w: 2400, h: 1151,
+      title: "Lunaari",
+      category: "refsheet",
+      tier: "Reference Sheet",
+      alt: "Reference sheet of Lunaari, a black and white bat creature with huge blue-lined ears, iridescent pink and purple holographic wings, moon and star markings, shown front, back and side, with two headshots, a tail detail and paw prints."
+    },
+    {
+      src: "assets/art/monarch-fox-ref-sheet.jpg", w: 2000, h: 858,
+      title: "Monarch Fox",
+      category: "refsheet",
+      tier: "Reference Sheet",
+      alt: "Reference sheet of an orange fox with huge monarch butterfly wings and antennae, wearing a black corset outfit, shown front and back, with a fluffy headshot, eye and paw-pad details and a color palette."
+    },
+    {
+      src: "assets/art/sweet-grin-headshot.jpg", w: 1600, h: 1602,
+      title: "Sweet Grin",
+      category: "headshot",
+      tier: "Headshot",
+      alt: "Close-up headshot of a pale, cream-toned canine with long lashes and a wide, happy grin, tongue out, in front of a soft dark forest background."
     }
   ],
 
