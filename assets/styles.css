@@ -1265,3 +1265,8 @@ textarea.input { min-height: 130px; resize: vertical; line-height: 1.5; }
   .calc-form .stepper { border-radius: 6px; border: 2px solid var(--sk-line); border-bottom-width: 4px; background: var(--surface); }
   .calc-form .select { border-radius: 6px; border: 2px solid var(--sk-line); }
 }
+
+/* Landing pages: example art as a simple grid of taped prints */
+.landing-examples { columns: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 34px 28px; align-items: start; }
+.landing-examples .gallery-item { margin: 0; text-decoration: none; color: inherit; }
+.landing-examples .gallery-item:hover { color: inherit; }
