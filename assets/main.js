@@ -34,6 +34,43 @@
     } catch (e) { return null; }
   }
 
+  /* ---------- Where did this visitor find us? ----------
+     A short label only (e.g. "tiktok"), from a tagged link like ?from=tiktok or from
+     the site that linked here. No cookies, nothing sent anywhere until they submit a
+     request. Tagged links win over guesses; kept for 60 days. */
+  var SRC_KEY = "jb-from";
+  (function () {
+    try {
+      var q = new URLSearchParams(location.search);
+      var tag = q.get("from") || q.get("ref") || q.get("utm_source") || "";
+      var s = tag, guessed = false;
+      if (!s && document.referrer) {
+        var h = new URL(document.referrer).hostname.replace(/^www\./, "").toLowerCase();
+        if (h && h !== location.hostname.replace(/^www\./, "")) {
+          var map = [["tiktok", "tiktok"], ["bsky", "bluesky"], ["t.co", "x"], ["x.com", "x"], ["twitter", "x"], ["instagram", "instagram"],
+            ["discord", "discord"], ["furaffinity", "furaffinity"], ["google", "google"], ["bing", "bing"], ["duckduckgo", "duckduckgo"],
+            ["reddit", "reddit"], ["disboard", "disboard"], ["vgen", "vgen"], ["toyhou", "toyhouse"], ["ko-fi", "kofi"], ["facebook", "facebook"]];
+          s = h;
+          for (var i = 0; i < map.length; i++) if (h.indexOf(map[i][0]) !== -1) { s = map[i][1]; break; }
+          guessed = true;
+        }
+      }
+      s = String(s).toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 40);
+      if (!s) return;
+      var cur = null;
+      try { cur = JSON.parse(store(SRC_KEY) || "null"); } catch (e) {}
+      var fresh = cur && cur.v && cur.t > Date.now() - 60 * 864e5;
+      if (fresh && (guessed || !cur.g)) return;
+      store(SRC_KEY, JSON.stringify({ v: s, t: Date.now(), g: guessed }));
+    } catch (e) {}
+  })();
+  function visitSource() {
+    try {
+      var cur = JSON.parse(store(SRC_KEY) || "null");
+      return cur && cur.v && cur.t > Date.now() - 60 * 864e5 ? String(cur.v).slice(0, 40) : "";
+    } catch (e) { return ""; }
+  }
+
   /* ---------- Toast ---------- */
   var toastTimer;
   function toast(msg) {
@@ -909,12 +946,13 @@
         btn.disabled = true; btn.textContent = "Sending…";
         var sentTo = cv.email && cv.discord ? "by email and Discord DM" : cv.email ? "by email" : "by Discord DM";
         var filesToSend = pickedFiles.slice();
-        rpc("submit_request3", {
+        rpc("submit_request4", {
           p_name: val("#f-name"), p_email: cv.email, p_discord: cv.discord, p_type: val("#f-type"),
           p_character: val("#f-char"), p_refs: val("#f-refs"), p_description: val("#f-desc"),
           p_deadline: val("#f-deadline") || null, p_privacy: val("#f-privacy"),
           p_nsfw: mature.checked, p_adult: $("#f-adult").checked,
-          p_quote: attachedQuote ? attachedQuote.full : "", p_has_character: hasChar.value
+          p_quote: attachedQuote ? attachedQuote.full : "", p_has_character: hasChar.value,
+          p_source: visitSource()
         }).then(function (res) {
           var tok0 = String((res && res.token) || "");
           if (!filesToSend.length || !/^[0-9a-f]{36}$/.test(tok0)) return { res: res, failed: [] };

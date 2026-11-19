@@ -370,6 +370,7 @@
           }).join("");
       })()) +
       field("Deadline", esc(r.deadline)) +
+      field("Found you via", r.source ? "<b>" + esc(r.source) + "</b>" : "") +
       field("Privacy", esc(r.privacy));
     renderMsgs();
     mPicked = []; renderMPicked(); $("d-mtext").value = ""; $("d-merr").textContent = "";
