@@ -388,12 +388,14 @@
 
   /* ---------- Gallery + lightbox ---------- */
   var CAT = { cinematic: "Cinematic", fullbody: "Full Body", halfbody: "Half Body", headshot: "Headshots", chibi: "Chibis & Stickers", refsheet: "Ref Sheets" };
+  /* image descriptions also name the artist, for screen readers and image search */
+  var artAlt = function (a) { return (a.alt || a.title) + " Furry art by Jamzie (JamzieBites)."; };
   var grid = $("#gallery-grid");
   var art = C.gallery || [];
   if (grid) {
     grid.innerHTML = art.map(function (a, i) {
       return '<button type="button" class="gallery-item" data-cat="' + esc(a.category) + '" data-i="' + i + '" aria-label="View ' + esc(a.title) + ' larger">' +
-        '<img src="' + esc(safeUrl(a.thumb || a.src, true)) + '" width="' + num(a.w) + '" height="' + num(a.h) + '" alt="' + esc(a.alt || a.title) + '" loading="lazy" decoding="async">' +
+        '<img src="' + esc(safeUrl(a.thumb || a.src, true)) + '" width="' + num(a.w) + '" height="' + num(a.h) + '" alt="' + esc(artAlt(a)) + '" loading="lazy" decoding="async">' +
         '<span class="meta"><strong>' + esc(a.title) + "</strong><span>" + esc(a.tier || CAT[a.category] || "") + "</span></span></button>";
     }).join("");
 
@@ -418,7 +420,7 @@
     var show = function (i) {
       var a = art[i]; if (!a) return;
       cur = i;
-      lbImg.src = safeUrl(a.src, true); lbImg.alt = a.alt || a.title;
+      lbImg.src = safeUrl(a.src, true); lbImg.alt = artAlt(a);
       $("#lb-title").textContent = a.title;
       $("#lb-tier").textContent = (a.tier || "") + "  ·  © JamzieBites";
     };
